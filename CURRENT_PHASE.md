@@ -2,35 +2,40 @@
 
 ## 当前阶段
 
-P02 项目纪律文档
+P03 类型定义和 Zod Schema
 
 ## 当前目标
 
-创建项目管理文档，用来约束后续开发行为，并明确阶段推进、想法暂存、技术决策和当前阶段边界。
+定义核心数据结构，作为 AI 输出、前端展示、本地存储和导入导出的统一依据。
 
 ## 允许做的事
 
-- 创建 `ROADMAP.md`
-- 创建 `PARKING_LOT.md`
-- 创建 `DECISIONS.md`
-- 创建 `CURRENT_PHASE.md`
-- 记录 P01 已完成、P02 进行中、P03-P30 未开始
-- 记录阶段外想法，但不实现
+- 创建 `types/travel.ts`
+- 创建 `types/index.ts`
+- 使用 Zod 定义并导出核心 Schema
+- 使用 `z.infer` 推导并导出 TypeScript 类型
+- 在 `TravelPlanSchema` 中加入 `inputParams?: TravelInputSchema`
+- 更新 `CURRENT_PHASE.md` 记录当前阶段边界
 
 ## 禁止做的事
 
-- 修改任何代码文件
-- 安装依赖
-- 创建业务组件
+- 创建 mock 数据
+- 创建组件
 - 创建 API
-- 实现 `PARKING_LOT.md` 中的暂存想法
+- 修改 `app/` 页面
+- 安装依赖
+- 添加坐标、天气、地图、酒店详情、大使馆等阶段外字段
+- 将 `packingList` 提前改成对象数组
 - 扩大当前阶段范围
 
 ## 完成标志
 
-- `ROADMAP.md` 已列出 P01-P30，并正确标记阶段状态
-- `PARKING_LOT.md` 已说明新想法只记录不立即实现，并包含预置条目
-- `DECISIONS.md` 已记录初始技术决策
-- `CURRENT_PHASE.md` 已明确当前阶段、目标、允许事项、禁止事项和完成标志
-- 未触碰任何代码文件
-
+- `types/travel.ts` 已定义并导出 `TravelItemSchema`
+- `types/travel.ts` 已定义并导出 `TravelDaySchema`
+- `types/travel.ts` 已定义并导出 `BudgetSchema`
+- `types/travel.ts` 已定义并导出 `TravelInputSchema`
+- `types/travel.ts` 已定义并导出 `TravelPlanSchema`
+- 所有 TypeScript 类型均由 `z.infer` 推导
+- `types/index.ts` 已统一导出类型模块
+- `npm run lint` 通过
+- `npm run build` 通过
