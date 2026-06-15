@@ -2,50 +2,43 @@
 
 ## 当前阶段
 
-P06 旅行需求表单
+P07 行程总览卡片
 
 ## 阶段状态
 
-已完成，已通过最终验收。
+未开始，准备进入下一阶段。
 
 ## 当前目标
 
-创建用户输入旅行需求的表单，但暂时不生成结果。
+基于现有 Mock 数据，在首页结果区域展示旅行计划总览卡片，为后续每日行程、预算、清单和提示展示打基础。
 
 ## 前置确认
 
-- `ROADMAP.md` 已记录 P06 为下一阶段
-- `DECISIONS.md` 已确认使用 Next.js App Router 和 shadcn/ui
-- P06 不调用 AI、不引入 mock 数据、不展示旅行计划
+- P06.5 快速规划入口优化已完成并通过验收
+- `TravelInputSchema` 已支持快速规划输入
+- `mockTravelInput` 和 `mockTravelPlan.inputParams` 已同步到新的输入结构
+- `ROADMAP.md` 保持 P07-P30 原编号继续推进
 
 ## 允许做的事
 
-- 创建 `components/TravelForm.tsx`
-- 更新 `app/page.tsx` 将表单放入首页左侧
-- 按需添加 shadcn/ui 基础组件
-- 如果安装 shadcn/ui 组件导致变化，可更新 `package.json` 和 lock 文件
-- 更新 `CURRENT_PHASE.md` 记录当前阶段边界
+- 创建或更新行程总览相关展示组件
+- 在首页结果区域展示 Mock 行程总览
+- 使用 `lib/mock-data.ts` 中现有 Mock 数据
+- 保持与现有 shadcn/ui 和页面布局风格一致
+- 更新阶段文档记录 P07 边界
 
 ## 禁止做的事
 
 - 调用 AI
-- 引入 mock 数据
-- 展示旅行计划
-- 创建结果展示组件
-- 做保存功能
-- 做地点自动补全
+- 创建或修改 AI API
+- 做保存、导出、地图、天气、登录、数据库
+- 重排 P08-P30 编号
+- 大规模重构首页布局
 
 ## 完成标志
 
-- `components/TravelForm.tsx` 已创建
-- 表单字段严格对应 `TravelInputSchema`
-- 必填字段包含 `destination`、`days`、`budget`、`currency`
-- 可选字段包含 `departureCity`、`travelers`、`travelType`、`preferences`、`pace`、`specialRequests`
-- 提交时使用 `TravelInputSchema` 校验
-- 校验失败时显示字段级错误
-- `preferences` 支持多选
-- 提交成功时只 `console.log` 表单数据
-- 首页左侧显示 `TravelForm`
-- 右侧结果区域保留占位
+- 首页结果区域展示行程标题、目的地、天数、预算、摘要等总览信息
+- 总览组件使用现有 Mock 数据
+- 不引入真实 AI 或后端能力
 - `npm run lint` 通过
 - `npm run build` 通过

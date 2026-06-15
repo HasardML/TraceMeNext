@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import type { ZodIssue } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -17,17 +17,23 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { TravelInputSchema, type TravelInput } from "@/types";
 
+type TravelFormProps = {
+  onSubmit?: (data: TravelInput) => void;
+  loading?: boolean;
+};
+
 type TravelFormState = {
   destination: string;
   departureCity: string;
+  startDate: string;
   days: string;
+  travelers: string;
+  specialRequests: string;
   budget: string;
   currency: string;
-  travelers: string;
   travelType: string;
   preferences: string[];
   pace: string;
-  specialRequests: string;
 };
 
 type FieldName = keyof TravelInput;
@@ -36,56 +42,63 @@ type FieldErrors = Partial<Record<FieldName, string>>;
 const initialFormState: TravelFormState = {
   destination: "",
   departureCity: "",
-  days: "",
+  startDate: "",
+  days: "5",
+  travelers: "1",
+  specialRequests: "",
   budget: "",
   currency: "CNY",
-  travelers: "",
   travelType: "",
   preferences: [],
   pace: "",
-  specialRequests: "",
 };
 
 const currencyOptions = [
-  { value: "CNY", label: "人民币 CNY" },
-  { value: "USD", label: "美元 USD" },
-  { value: "EUR", label: "欧元 EUR" },
-  { value: "JPY", label: "日元 JPY" },
+  { value: "CNY", label: "CNY" },
+  { value: "USD", label: "USD" },
+  { value: "JPY", label: "JPY" },
+  { value: "EUR", label: "EUR" },
+  { value: "THB", label: "THB" },
+  { value: "KRW", label: "KRW" },
 ];
 
 const travelTypeOptions = [
-  { value: "solo", label: "一个人" },
+  { value: "solo", label: "独自旅行" },
   { value: "couple", label: "情侣" },
   { value: "family", label: "家庭" },
   { value: "friends", label: "朋友" },
 ];
 
 const paceOptions = [
-  { value: "relaxed", label: "轻松" },
+  { value: "relaxed", label: "轻松悠闲" },
   { value: "moderate", label: "适中" },
-  { value: "intensive", label: "紧凑" },
+  { value: "intensive", label: "紧凑充实" },
 ];
 
 const preferenceOptions = [
-  { value: "food", label: "美食" },
-  { value: "nature", label: "自然风光" },
-  { value: "culture", label: "人文历史" },
-  { value: "shopping", label: "购物" },
-  { value: "family-friendly", label: "亲子友好" },
-  { value: "local-life", label: "本地生活" },
+  "美食",
+  "文化历史",
+  "自然风光",
+  "购物",
+  "休闲放松",
+  "动漫",
+  "摄影",
+  "亲子",
+  "夜生活",
 ];
 
 const fieldNames: FieldName[] = [
   "destination",
   "departureCity",
+  "startDate",
   "days",
+  "travelers",
+  "specialRequests",
   "budget",
   "currency",
-  "travelers",
   "travelType",
   "preferences",
   "pace",
-  "specialRequests",
 ];
 
 function optionalText(value: string) {
@@ -109,16 +122,16 @@ function getFieldErrorMessage(field: FieldName, issue: ZodIssue) {
       return "请输入目的地。";
     case "days":
       return "请输入 1 到 30 天之间的旅行天数。";
+    case "travelers":
+      return "请输入 1 到 10 人之间的出行人数。";
     case "budget":
       return "请输入不小于 0 的预算。";
     case "currency":
-      return "请选择预算币种。";
-    case "travelers":
-      return "请输入 1 到 10 人之间的出行人数。";
+      return "请选择有效的货币。";
     case "travelType":
       return "请选择有效的出行类型。";
     case "pace":
-      return "请选择有效的行程节奏。";
+      return "请选择有效的节奏偏好。";
     default:
       return fallback;
   }
@@ -137,9 +150,11 @@ function buildErrors(issues: ZodIssue[]) {
   return nextErrors;
 }
 
-export function TravelForm() {
+export function TravelForm({ onSubmit, loading = false }: TravelFormProps = {}) {
   const [form, setForm] = useState<TravelFormState>(initialFormState);
   const [errors, setErrors] = useState<FieldErrors>({});
+  const [formError, setFormError] = useState<string | null>(null);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   function updateField(field: keyof TravelFormState, value: string) {
     setForm((current) => ({ ...current, [field]: value }));
@@ -155,29 +170,41 @@ export function TravelForm() {
     });
   }
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (loading) {
+      return;
+    }
 
     const parsed = TravelInputSchema.safeParse({
       destination: optionalText(form.destination),
       departureCity: optionalText(form.departureCity),
+      startDate: optionalText(form.startDate),
       days: optionalNumber(form.days),
+      travelers: optionalNumber(form.travelers),
+      specialRequests: optionalText(form.specialRequests),
       budget: optionalNumber(form.budget),
       currency: optionalText(form.currency),
-      travelers: optionalNumber(form.travelers),
       travelType: optionalText(form.travelType),
-      preferences:
-        form.preferences.length > 0 ? form.preferences : undefined,
+      preferences: form.preferences.length > 0 ? form.preferences : undefined,
       pace: optionalText(form.pace),
-      specialRequests: optionalText(form.specialRequests),
     });
 
     if (!parsed.success) {
       setErrors(buildErrors(parsed.error.issues));
+      setFormError("请检查表单中的提示后再生成旅行计划。");
       return;
     }
 
     setErrors({});
+    setFormError(null);
+
+    if (onSubmit) {
+      onSubmit(parsed.data);
+      return;
+    }
+
     console.log("Travel input", parsed.data);
   }
 
@@ -189,10 +216,10 @@ export function TravelForm() {
     >
       <div className="space-y-1.5">
         <h1 className="text-lg font-semibold text-card-foreground">
-          旅行需求
+          快速规划
         </h1>
         <p className="text-sm text-muted-foreground">
-          填写基础偏好后提交，本阶段只校验输入。
+          先填写关键信息，预算和偏好可在高级选项中补充。
         </p>
       </div>
 
@@ -205,7 +232,7 @@ export function TravelForm() {
             value={form.destination}
             onChange={(event) => updateField("destination", event.target.value)}
             aria-invalid={Boolean(errors.destination)}
-            placeholder="例如：东京"
+            placeholder="例如：东京、巴黎、曼谷"
             required
           />
           {errors.destination ? (
@@ -222,13 +249,24 @@ export function TravelForm() {
             onChange={(event) =>
               updateField("departureCity", event.target.value)
             }
-            placeholder="例如：上海"
+            placeholder="例如：上海、北京、广州"
           />
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="days">天数</Label>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="space-y-2 sm:col-span-1">
+            <Label htmlFor="startDate">出发日期</Label>
+            <Input
+              id="startDate"
+              name="startDate"
+              type="date"
+              value={form.startDate}
+              onChange={(event) => updateField("startDate", event.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2 sm:col-span-1">
+            <Label htmlFor="days">旅行天数</Label>
             <Input
               id="days"
               name="days"
@@ -246,8 +284,8 @@ export function TravelForm() {
             ) : null}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="travelers">人数</Label>
+          <div className="space-y-2 sm:col-span-1">
+            <Label htmlFor="travelers">出行人数</Label>
             <Input
               id="travelers"
               name="travelers"
@@ -258,7 +296,6 @@ export function TravelForm() {
               value={form.travelers}
               onChange={(event) => updateField("travelers", event.target.value)}
               aria-invalid={Boolean(errors.travelers)}
-              placeholder="可选"
             />
             {errors.travelers ? (
               <p className="text-sm text-red-600">{errors.travelers}</p>
@@ -266,133 +303,8 @@ export function TravelForm() {
           </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="budget">预算</Label>
-            <Input
-              id="budget"
-              name="budget"
-              type="number"
-              min={0}
-              step={100}
-              value={form.budget}
-              onChange={(event) => updateField("budget", event.target.value)}
-              aria-invalid={Boolean(errors.budget)}
-              required
-            />
-            {errors.budget ? (
-              <p className="text-sm text-red-600">{errors.budget}</p>
-            ) : null}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="currency">币种</Label>
-            <Select
-              value={form.currency}
-              onValueChange={(value) => updateField("currency", value)}
-            >
-              <SelectTrigger
-                id="currency"
-                className="w-full"
-                aria-invalid={Boolean(errors.currency)}
-              >
-                <SelectValue placeholder="选择币种" />
-              </SelectTrigger>
-              <SelectContent>
-                {currencyOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.currency ? (
-              <p className="text-sm text-red-600">{errors.currency}</p>
-            ) : null}
-          </div>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label>出行类型</Label>
-            <Select
-              value={form.travelType || undefined}
-              onValueChange={(value) => updateField("travelType", value)}
-            >
-              <SelectTrigger
-                className="w-full"
-                aria-invalid={Boolean(errors.travelType)}
-              >
-                <SelectValue placeholder="可选" />
-              </SelectTrigger>
-              <SelectContent>
-                {travelTypeOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.travelType ? (
-              <p className="text-sm text-red-600">{errors.travelType}</p>
-            ) : null}
-          </div>
-
-          <div className="space-y-2">
-            <Label>行程节奏</Label>
-            <Select
-              value={form.pace || undefined}
-              onValueChange={(value) => updateField("pace", value)}
-            >
-              <SelectTrigger
-                className="w-full"
-                aria-invalid={Boolean(errors.pace)}
-              >
-                <SelectValue placeholder="可选" />
-              </SelectTrigger>
-              <SelectContent>
-                {paceOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.pace ? (
-              <p className="text-sm text-red-600">{errors.pace}</p>
-            ) : null}
-          </div>
-        </div>
-
-        <fieldset className="space-y-3">
-          <legend className="text-sm font-medium text-foreground">
-            偏好
-          </legend>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {preferenceOptions.map((option) => {
-              const id = `preference-${option.value}`;
-              const checked = form.preferences.includes(option.value);
-
-              return (
-                <div key={option.value} className="flex items-center gap-2">
-                  <Checkbox
-                    id={id}
-                    checked={checked}
-                    onCheckedChange={(value) =>
-                      updatePreference(option.value, value === true)
-                    }
-                  />
-                  <Label htmlFor={id} className="font-normal">
-                    {option.label}
-                  </Label>
-                </div>
-              );
-            })}
-          </div>
-        </fieldset>
-
         <div className="space-y-2">
-          <Label htmlFor="specialRequests">特殊需求</Label>
+          <Label htmlFor="specialRequests">一句话需求</Label>
           <Textarea
             id="specialRequests"
             name="specialRequests"
@@ -400,13 +312,160 @@ export function TravelForm() {
             onChange={(event) =>
               updateField("specialRequests", event.target.value)
             }
-            placeholder="例如：不吃辣、需要少步行、希望安排亲子项目"
+            placeholder="例如：想轻松一点，多吃当地美食，少排队，适合第一次去"
             rows={4}
           />
         </div>
 
-        <Button type="submit" className="w-full">
-          提交需求
+        <div className="border-t border-border pt-4">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full justify-between"
+            aria-expanded={advancedOpen}
+            aria-controls="advanced-travel-options"
+            onClick={() => setAdvancedOpen((current) => !current)}
+          >
+            <span>{advancedOpen ? "收起高级选项" : "高级选项"}</span>
+            <span aria-hidden="true">{advancedOpen ? "-" : "+"}</span>
+          </Button>
+
+          {advancedOpen ? (
+            <div id="advanced-travel-options" className="mt-5 space-y-5">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="budget">预算</Label>
+                  <Input
+                    id="budget"
+                    name="budget"
+                    type="number"
+                    min={0}
+                    step={100}
+                    value={form.budget}
+                    onChange={(event) =>
+                      updateField("budget", event.target.value)
+                    }
+                    aria-invalid={Boolean(errors.budget)}
+                    placeholder="不填则按中等预算规划"
+                  />
+                  {errors.budget ? (
+                    <p className="text-sm text-red-600">{errors.budget}</p>
+                  ) : null}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="currency">货币</Label>
+                  <Select
+                    value={form.currency}
+                    onValueChange={(value) => updateField("currency", value)}
+                  >
+                    <SelectTrigger
+                      id="currency"
+                      className="w-full"
+                      aria-invalid={Boolean(errors.currency)}
+                    >
+                      <SelectValue placeholder="CNY" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {currencyOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.currency ? (
+                    <p className="text-sm text-red-600">{errors.currency}</p>
+                  ) : null}
+                </div>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>出行类型</Label>
+                  <Select
+                    value={form.travelType || undefined}
+                    onValueChange={(value) => updateField("travelType", value)}
+                  >
+                    <SelectTrigger
+                      className="w-full"
+                      aria-invalid={Boolean(errors.travelType)}
+                    >
+                      <SelectValue placeholder="可选" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {travelTypeOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.travelType ? (
+                    <p className="text-sm text-red-600">{errors.travelType}</p>
+                  ) : null}
+                </div>
+
+                <div className="space-y-2">
+                  <Label>节奏偏好</Label>
+                  <Select
+                    value={form.pace || undefined}
+                    onValueChange={(value) => updateField("pace", value)}
+                  >
+                    <SelectTrigger
+                      className="w-full"
+                      aria-invalid={Boolean(errors.pace)}
+                    >
+                      <SelectValue placeholder="可选" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {paceOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.pace ? (
+                    <p className="text-sm text-red-600">{errors.pace}</p>
+                  ) : null}
+                </div>
+              </div>
+
+              <fieldset className="space-y-3">
+                <legend className="text-sm font-medium text-foreground">
+                  偏好标签
+                </legend>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  {preferenceOptions.map((option) => {
+                    const id = `preference-${option}`;
+                    const checked = form.preferences.includes(option);
+
+                    return (
+                      <div key={option} className="flex items-center gap-2">
+                        <Checkbox
+                          id={id}
+                          checked={checked}
+                          onCheckedChange={(value) =>
+                            updatePreference(option, value === true)
+                          }
+                        />
+                        <Label htmlFor={id} className="font-normal">
+                          {option}
+                        </Label>
+                      </div>
+                    );
+                  })}
+                </div>
+              </fieldset>
+            </div>
+          ) : null}
+        </div>
+
+        {formError ? <p className="text-sm text-red-600">{formError}</p> : null}
+
+        <Button type="submit" className="w-full" disabled={loading}>
+          生成旅行计划
         </Button>
       </div>
     </form>

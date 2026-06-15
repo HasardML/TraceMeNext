@@ -9,13 +9,15 @@ import {
 export const mockTravelInput: TravelInput = {
   destination: "东京",
   departureCity: "上海",
+  startDate: "2026-09-20",
   days: 5,
+  travelers: 2,
   budget: 8000,
   currency: "CNY",
-  travelers: 2,
   travelType: "couple",
-  preferences: ["美食", "动漫", "城市漫步"],
+  preferences: ["美食", "动漫", "摄影"],
   pace: "relaxed",
+  specialRequests: "想轻松一点，多吃当地美食，少排队，适合第一次去东京。",
 };
 
 export const mockTravelPlan: TravelPlan = {

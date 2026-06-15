@@ -25,14 +25,15 @@ export const BudgetSchema = z.object({
 });
 
 export const TravelInputSchema = z.object({
-  destination: z.string(),
+  destination: z.string().min(1),
   departureCity: z.string().optional(),
-  days: z.number().min(1).max(30),
-  budget: z.number().min(0),
+  startDate: z.string().optional(),
+  days: z.number().min(1).max(30).default(5),
+  travelers: z.number().min(1).max(10).default(1),
+  budget: z.number().min(0).optional(),
   currency: z.string().default("CNY"),
-  travelers: z.number().min(1).max(10).optional(),
   travelType: z.enum(["solo", "couple", "family", "friends"]).optional(),
-  preferences: z.array(z.string()).optional(),
+  preferences: z.array(z.string()).default([]),
   pace: z.enum(["relaxed", "moderate", "intensive"]).optional(),
   specialRequests: z.string().optional(),
 });
