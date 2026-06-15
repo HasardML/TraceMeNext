@@ -2,40 +2,45 @@
 
 ## 当前阶段
 
-P03 类型定义和 Zod Schema
+P04 Mock 数据
 
 ## 当前目标
 
-定义核心数据结构，作为 AI 输出、前端展示、本地存储和导入导出的统一依据。
+创建一份完整的模拟旅行输入和旅行计划，用于后续 UI 开发展示和数据流联调。
+
+## 前置确认
+
+- `types/travel.ts` 已存在 P03 Schema 和由 `z.infer` 推导的类型
+- `TravelPlanSchema` 已包含 `inputParams?: TravelInputSchema`
 
 ## 允许做的事
 
-- 创建 `types/travel.ts`
-- 创建 `types/index.ts`
-- 使用 Zod 定义并导出核心 Schema
-- 使用 `z.infer` 推导并导出 TypeScript 类型
-- 在 `TravelPlanSchema` 中加入 `inputParams?: TravelInputSchema`
+- 创建 `lib/mock-data.ts`
+- 导出 `mockTravelInput: TravelInput`
+- 导出 `mockTravelPlan: TravelPlan`
+- 提供 `validateMockData()`，使用 Schema.parse 校验 mock 数据
 - 更新 `CURRENT_PHASE.md` 记录当前阶段边界
 
 ## 禁止做的事
 
-- 创建 mock 数据
+- 修改 Schema
 - 创建组件
+- 修改页面
 - 创建 API
-- 修改 `app/` 页面
 - 安装依赖
-- 添加坐标、天气、地图、酒店详情、大使馆等阶段外字段
-- 将 `packingList` 提前改成对象数组
 - 扩大当前阶段范围
 
 ## 完成标志
 
-- `types/travel.ts` 已定义并导出 `TravelItemSchema`
-- `types/travel.ts` 已定义并导出 `TravelDaySchema`
-- `types/travel.ts` 已定义并导出 `BudgetSchema`
-- `types/travel.ts` 已定义并导出 `TravelInputSchema`
-- `types/travel.ts` 已定义并导出 `TravelPlanSchema`
-- 所有 TypeScript 类型均由 `z.infer` 推导
-- `types/index.ts` 已统一导出类型模块
+- `lib/mock-data.ts` 已创建
+- `mockTravelInput` 已覆盖东京、上海出发、5 天、8000 CNY、2 人、情侣、偏好和节奏字段
+- `mockTravelPlan` 已提供 5 天东京旅行计划
+- 每天包含 3 到 5 个行程项，且时间安排避开凌晨景点
+- 行程项 `type` 使用 Schema 枚举
+- `budget.total` 等于预算分类和行程项 cost 之和
+- `packingList` 至少 8 项
+- `tips` 至少 5 项
+- `mockTravelPlan.inputParams` 指向 `mockTravelInput`
+- `validateMockData()` 可通过 Schema.parse 校验 mock 数据
 - `npm run lint` 通过
 - `npm run build` 通过
