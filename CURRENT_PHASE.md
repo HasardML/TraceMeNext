@@ -2,7 +2,7 @@
 
 ## 当前阶段
 
-P05 全局布局和首页骨架
+P06 旅行需求表单
 
 ## 阶段状态
 
@@ -10,38 +10,42 @@ P05 全局布局和首页骨架
 
 ## 当前目标
 
-搭建应用基本页面结构，为表单和结果展示提供容器。
+创建用户输入旅行需求的表单，但暂时不生成结果。
 
 ## 前置确认
 
-- `ROADMAP.md` 已记录 P05 为下一阶段
+- `ROADMAP.md` 已记录 P06 为下一阶段
 - `DECISIONS.md` 已确认使用 Next.js App Router 和 shadcn/ui
-- P04 Mock 数据已完成，P05 不引入或展示 mock 数据
+- P06 不调用 AI、不引入 mock 数据、不展示旅行计划
 
 ## 允许做的事
 
-- 创建 `components/Header.tsx`
-- 更新 `app/layout.tsx` 引入全局 Header
-- 更新 `app/page.tsx` 创建首页左右布局占位
-- 必要时更新 `app/globals.css` 保持基础样式简洁
+- 创建 `components/TravelForm.tsx`
+- 更新 `app/page.tsx` 将表单放入首页左侧
+- 按需添加 shadcn/ui 基础组件
+- 如果安装 shadcn/ui 组件导致变化，可更新 `package.json` 和 lock 文件
 - 更新 `CURRENT_PHASE.md` 记录当前阶段边界
 
 ## 禁止做的事
 
-- 创建表单组件
-- 创建结果展示组件
+- 调用 AI
 - 引入 mock 数据
-- 创建 `/plans` 页面
-- 安装新依赖
-- 做暗黑模式
+- 展示旅行计划
+- 创建结果展示组件
+- 做保存功能
+- 做地点自动补全
 
 ## 完成标志
 
-- `components/Header.tsx` 已创建，左侧显示「AI 旅行规划器」并可点击回首页
-- `app/layout.tsx` 已引入 Header，并保持 `zh-CN` 和 metadata
-- `app/page.tsx` 已提供桌面端左 1/3、右 2/3 的两栏占位布局
-- 左侧占位区在桌面端 sticky
-- 移动端首页布局上下排列
-- 样式使用 Tailwind 和 shadcn 默认风格，保持简洁
+- `components/TravelForm.tsx` 已创建
+- 表单字段严格对应 `TravelInputSchema`
+- 必填字段包含 `destination`、`days`、`budget`、`currency`
+- 可选字段包含 `departureCity`、`travelers`、`travelType`、`preferences`、`pace`、`specialRequests`
+- 提交时使用 `TravelInputSchema` 校验
+- 校验失败时显示字段级错误
+- `preferences` 支持多选
+- 提交成功时只 `console.log` 表单数据
+- 首页左侧显示 `TravelForm`
+- 右侧结果区域保留占位
 - `npm run lint` 通过
 - `npm run build` 通过
