@@ -1,4 +1,6 @@
+import { PlanOverview } from "@/components/plan";
 import { TravelForm } from "@/components/TravelForm";
+import { mockTravelPlan } from "@/lib/mock-data";
 
 export default function Home() {
   return (
@@ -9,11 +11,7 @@ export default function Home() {
         </section>
 
         <section className="lg:col-span-2">
-          <div className="min-h-[420px] rounded-lg border border-border bg-card p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-card-foreground">
-              结果展示区域
-            </h2>
-          </div>
+          <PlanOverview plan={mockTravelPlan} />
         </section>
       </div>
     </main>
