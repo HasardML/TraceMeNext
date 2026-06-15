@@ -1,7 +1,23 @@
 export default function Home() {
   return (
-    <main className="flex min-h-screen items-center justify-center">
-      <h1 className="text-4xl font-semibold">AI 旅行规划器</h1>
+    <main className="min-h-[calc(100vh-3.5rem)] bg-background">
+      <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-3 lg:px-8">
+        <section className="lg:sticky lg:top-6 lg:self-start">
+          <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
+            <h1 className="text-lg font-semibold text-card-foreground">
+              表单区域
+            </h1>
+          </div>
+        </section>
+
+        <section className="lg:col-span-2">
+          <div className="min-h-[420px] rounded-lg border border-border bg-card p-6 shadow-sm">
+            <h2 className="text-lg font-semibold text-card-foreground">
+              结果展示区域
+            </h2>
+          </div>
+        </section>
+      </div>
     </main>
   );
 }

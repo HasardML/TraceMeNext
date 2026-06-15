@@ -2,45 +2,46 @@
 
 ## 当前阶段
 
-P04 Mock 数据
+P05 全局布局和首页骨架
+
+## 阶段状态
+
+已完成，已通过最终验收。
 
 ## 当前目标
 
-创建一份完整的模拟旅行输入和旅行计划，用于后续 UI 开发展示和数据流联调。
+搭建应用基本页面结构，为表单和结果展示提供容器。
 
 ## 前置确认
 
-- `types/travel.ts` 已存在 P03 Schema 和由 `z.infer` 推导的类型
-- `TravelPlanSchema` 已包含 `inputParams?: TravelInputSchema`
+- `ROADMAP.md` 已记录 P05 为下一阶段
+- `DECISIONS.md` 已确认使用 Next.js App Router 和 shadcn/ui
+- P04 Mock 数据已完成，P05 不引入或展示 mock 数据
 
 ## 允许做的事
 
-- 创建 `lib/mock-data.ts`
-- 导出 `mockTravelInput: TravelInput`
-- 导出 `mockTravelPlan: TravelPlan`
-- 提供 `validateMockData()`，使用 Schema.parse 校验 mock 数据
+- 创建 `components/Header.tsx`
+- 更新 `app/layout.tsx` 引入全局 Header
+- 更新 `app/page.tsx` 创建首页左右布局占位
+- 必要时更新 `app/globals.css` 保持基础样式简洁
 - 更新 `CURRENT_PHASE.md` 记录当前阶段边界
 
 ## 禁止做的事
 
-- 修改 Schema
-- 创建组件
-- 修改页面
-- 创建 API
-- 安装依赖
-- 扩大当前阶段范围
+- 创建表单组件
+- 创建结果展示组件
+- 引入 mock 数据
+- 创建 `/plans` 页面
+- 安装新依赖
+- 做暗黑模式
 
 ## 完成标志
 
-- `lib/mock-data.ts` 已创建
-- `mockTravelInput` 已覆盖东京、上海出发、5 天、8000 CNY、2 人、情侣、偏好和节奏字段
-- `mockTravelPlan` 已提供 5 天东京旅行计划
-- 每天包含 3 到 5 个行程项，且时间安排避开凌晨景点
-- 行程项 `type` 使用 Schema 枚举
-- `budget.total` 等于预算分类和行程项 cost 之和
-- `packingList` 至少 8 项
-- `tips` 至少 5 项
-- `mockTravelPlan.inputParams` 指向 `mockTravelInput`
-- `validateMockData()` 可通过 Schema.parse 校验 mock 数据
+- `components/Header.tsx` 已创建，左侧显示「AI 旅行规划器」并可点击回首页
+- `app/layout.tsx` 已引入 Header，并保持 `zh-CN` 和 metadata
+- `app/page.tsx` 已提供桌面端左 1/3、右 2/3 的两栏占位布局
+- 左侧占位区在桌面端 sticky
+- 移动端首页布局上下排列
+- 样式使用 Tailwind 和 shadcn 默认风格，保持简洁
 - `npm run lint` 通过
 - `npm run build` 通过
