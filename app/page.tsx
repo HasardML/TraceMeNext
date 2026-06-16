@@ -1,4 +1,10 @@
-import { DayList, PlanOverview } from "@/components/plan";
+import {
+  BudgetCard,
+  DayList,
+  PackingList,
+  PlanOverview,
+  TipsCard,
+} from "@/components/plan";
 import { TravelForm } from "@/components/TravelForm";
 import { mockTravelPlan } from "@/lib/mock-data";
 
@@ -16,6 +22,12 @@ export default function Home() {
             days={mockTravelPlan.days}
             currency={mockTravelPlan.currency}
           />
+          <BudgetCard
+            budget={mockTravelPlan.budget}
+            currency={mockTravelPlan.currency}
+          />
+          <PackingList packingList={mockTravelPlan.packingList} />
+          <TipsCard tips={mockTravelPlan.tips} />
         </section>
       </div>
     </main>

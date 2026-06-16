@@ -2,7 +2,7 @@
 
 ## 当前阶段
 
-P08 每日行程卡片
+P09 预算、清单、提示展示
 
 ## 阶段状态
 
@@ -10,46 +10,48 @@ P08 每日行程卡片
 
 ## 当前目标
 
-基于现有 Mock 数据，在首页结果区域展示每天的详细行程，为后续预算、清单和提示展示打基础。
+基于现有 Mock 数据，在首页结果区域补齐预算、行前清单和注意事项展示，为后续表单联动阶段保留稳定展示结构。
 
 ## 前置确认
 
-- P07 行程总览卡片已完成并通过验收
-- `TravelDay` 和 `TravelItem` 类型已覆盖每日行程展示所需字段
-- `mockTravelPlan.days` 已提供可用于首页展示的 Mock 数据
-- `ROADMAP.md` 保持 P08-P30 原编号继续推进
+- P08 每日行程卡片已完成并通过验收
+- `Budget`、`packingList` 和 `tips` 类型已覆盖本阶段展示所需字段
+- `mockTravelPlan` 已提供预算、清单和提示 Mock 数据
+- `ROADMAP.md` 保持 P09-P30 原编号继续推进
 
 ## 允许做的事
 
-- 创建或更新每日行程相关展示组件
-- 在首页结果区域展示 Mock 每日行程
+- 创建预算、行前清单和注意事项展示组件
+- 在首页结果区域按顺序展示 `PlanOverview`、`DayList`、`BudgetCard`、`PackingList`、`TipsCard`
 - 使用 `lib/mock-data.ts` 中现有 Mock 数据
 - 保持与现有 shadcn/ui 和页面布局风格一致
-- 更新阶段文档记录 P08 边界
+- 更新阶段文档记录 P09 边界
 
 ## 禁止做的事
 
 - 调用 AI
 - 创建或修改 AI API
 - 做保存、导出、地图、天气、登录、数据库
-- 重排 P08-P30 编号
-- 做预算、清单、tips 展示
-- 做编辑、折叠展开、拖拽排序
-- 显示地图、坐标、路线
+- 重排 P09-P30 编号
+- 做清单勾选状态持久化
+- 做预算编辑
+- 做 tips 编辑
+- 做图表
+- 做表单联动
 
 ## 完成标志
 
-- 首页在行程总览下方展示每日行程列表
-- 每个行程项展示 time、type 标签或图标、place、description、cost
-- type 覆盖 attraction、food、transport、hotel、shopping、rest
-- 每日行程组件使用现有 Mock 数据
-- 不引入真实 AI 或后端能力
+- 新增 `BudgetCard` 并展示 transport、accommodation、food、tickets、shopping、other、total
+- 新增 `PackingList` 并展示 `packingList: string[]`
+- 新增 `TipsCard` 并展示 `tips: string[]`
+- 首页右侧展示顺序为 `PlanOverview`、`DayList`、`BudgetCard`、`PackingList`、`TipsCard`
+- 不引入真实 AI、后端能力、编辑能力或持久化状态
 - `npm run lint` 通过
 - `npm run build` 通过
 
 ## 本阶段交付
 
-- 新增 `DayCard` 每日行程卡片组件
-- 新增 `DayList` 每日行程列表组件
-- 首页在 `PlanOverview` 下方使用 `mockTravelPlan.days` 渲染每日行程
-- 左侧旅行需求表单保持可用，暂不做提交联动
+- 新增 `BudgetCard` 预算展示组件
+- 新增 `PackingList` 行前清单展示组件
+- 新增 `TipsCard` 注意事项展示组件
+- 首页在每日行程下方展示预算、行前清单和注意事项
