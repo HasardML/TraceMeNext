@@ -2,7 +2,7 @@
 
 ## 当前阶段
 
-P09 预算、清单、提示展示
+P10 表单到 Mock 结果联动
 
 ## 阶段状态
 
@@ -10,48 +10,53 @@ P09 预算、清单、提示展示
 
 ## 当前目标
 
-基于现有 Mock 数据，在首页结果区域补齐预算、行前清单和注意事项展示，为后续表单联动阶段保留稳定展示结构。
+不用真实 AI，先跑通用户提交表单到看到完整旅行计划的前端闭环。
 
 ## 前置确认
 
-- P08 每日行程卡片已完成并通过验收
-- `Budget`、`packingList` 和 `tips` 类型已覆盖本阶段展示所需字段
-- `mockTravelPlan` 已提供预算、清单和提示 Mock 数据
-- `ROADMAP.md` 保持 P09-P30 原编号继续推进
+- P09 预算、行前清单和注意事项展示已完成
+- `TravelForm` 已支持 `onSubmit` 与 `loading` props
+- `mockTravelPlan` 已可展示完整旅行计划
+- D005 明确先用 Mock 跑通体验和数据流，再接入 AI
 
 ## 允许做的事
 
-- 创建预算、行前清单和注意事项展示组件
-- 在首页结果区域按顺序展示 `PlanOverview`、`DayList`、`BudgetCard`、`PackingList`、`TipsCard`
-- 使用 `lib/mock-data.ts` 中现有 Mock 数据
+- 创建 `TravelPlanView` 组合计划展示组件
+- 创建 `LoadingState` 和 `EmptyState`
+- 在首页使用 `useState` 管理 `plan` 和 `isLoading`
+- 表单提交后延迟 1 到 2 秒展示 `mockTravelPlan`
+- loading 期间禁用表单提交按钮
 - 保持与现有 shadcn/ui 和页面布局风格一致
-- 更新阶段文档记录 P09 边界
+- 更新阶段文档记录 P10 边界
 
 ## 禁止做的事
 
 - 调用 AI
-- 创建或修改 AI API
-- 做保存、导出、地图、天气、登录、数据库
-- 重排 P09-P30 编号
-- 做清单勾选状态持久化
-- 做预算编辑
-- 做 tips 编辑
-- 做图表
-- 做表单联动
+- 创建 API
+- 保存 localStorage
+- 做编辑
+- 做导出
+- 做重新生成
+- 做地图、天气、登录、数据库
 
 ## 完成标志
 
-- 新增 `BudgetCard` 并展示 transport、accommodation、food、tickets、shopping、other、total
-- 新增 `PackingList` 并展示 `packingList: string[]`
-- 新增 `TipsCard` 并展示 `tips: string[]`
-- 首页右侧展示顺序为 `PlanOverview`、`DayList`、`BudgetCard`、`PackingList`、`TipsCard`
-- 不引入真实 AI、后端能力、编辑能力或持久化状态
+- 新增 `TravelPlanView` 并组合 `PlanOverview`、`DayList`、`BudgetCard`、`PackingList`、`TipsCard`
+- 新增 `LoadingState`
+- 新增 `EmptyState`
+- 首页首次加载右侧显示空状态
+- 表单提交后右侧显示 loading 状态
+- 延迟 1 到 2 秒后显示完整 Mock 旅行计划
+- loading 期间表单提交按钮禁用
+- 页面加载时不再直接展示 `mockTravelPlan`
+- 不引入真实 AI、API、编辑、导出、localStorage 或重新生成能力
 - `npm run lint` 通过
 - `npm run build` 通过
 
 ## 本阶段交付
 
-- 新增 `BudgetCard` 预算展示组件
-- 新增 `PackingList` 行前清单展示组件
-- 新增 `TipsCard` 注意事项展示组件
-- 首页在每日行程下方展示预算、行前清单和注意事项
+- 新增 `TravelPlanView`，统一组合完整旅行计划展示
+- 新增 `LoadingState`，用于表单提交后的等待状态
+- 新增 `EmptyState`，用于首次加载时的空结果状态
+- 首页改为表单提交后延迟展示 `mockTravelPlan`
+- 表单 loading 期间提交按钮禁用
