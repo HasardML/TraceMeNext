@@ -1,18 +1,83 @@
 "use client";
 
-import { useState } from "react";
-import { RefreshCw } from "lucide-react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Check, Eye, RefreshCw, Save } from "lucide-react";
 
 import { EmptyState } from "@/components/EmptyState";
 import { LoadingState } from "@/components/LoadingState";
 import { TravelPlanView } from "@/components/plan";
-import { SavePlanButton } from "@/components/plan/SavePlanButton";
 import { TravelForm } from "@/components/TravelForm";
 import { Button } from "@/components/ui/button";
 import { fetchTravelPlan } from "@/lib/api";
+import { getPlan, savePlan } from "@/lib/store";
 import type { TravelInput, TravelPlan } from "@/types";
 
 const GENERATE_TIMEOUT_MS = 60_000;
+
+type PlanActionsProps = {
+  plan: TravelPlan;
+  canRegenerate: boolean;
+  onRegenerate: () => Promise<void>;
+};
+
+function PlanActions({
+  plan,
+  canRegenerate,
+  onRegenerate,
+}: PlanActionsProps) {
+  const [isSaved, setIsSaved] = useState(false);
+  const [saveFailed, setSaveFailed] = useState(false);
+  const detailHref = `/plans/${encodeURIComponent(plan.id)}`;
+
+  useEffect(() => {
+    setIsSaved(getPlan(plan.id) !== null);
+    setSaveFailed(false);
+  }, [plan]);
+
+  function handleSave() {
+    try {
+      savePlan(plan);
+      const saved = getPlan(plan.id) !== null;
+
+      setIsSaved(saved);
+      setSaveFailed(!saved);
+    } catch {
+      setIsSaved(false);
+      setSaveFailed(true);
+    }
+  }
+
+  return (
+    <div className="flex flex-wrap justify-end gap-2">
+      <Button
+        type="button"
+        variant={isSaved ? "secondary" : "default"}
+        onClick={handleSave}
+        disabled={isSaved}
+      >
+        {isSaved ? <Check aria-hidden="true" /> : <Save aria-hidden="true" />}
+        {isSaved ? "已保存" : saveFailed ? "保存失败" : "保存计划"}
+      </Button>
+
+      {isSaved ? (
+        <Button asChild variant="outline">
+          <Link href={detailHref}>
+            <Eye aria-hidden="true" />
+            查看详情
+          </Link>
+        </Button>
+      ) : null}
+
+      {canRegenerate ? (
+        <Button type="button" onClick={onRegenerate}>
+          <RefreshCw aria-hidden="true" />
+          重新生成
+        </Button>
+      ) : null}
+    </div>
+  );
+}
 
 export default function Home() {
   const [plan, setPlan] = useState<TravelPlan | null>(null);
@@ -84,15 +149,11 @@ export default function Home() {
           ) : null}
           {!isLoading && plan ? (
             <>
-              <div className="flex flex-wrap justify-end gap-2">
-                <SavePlanButton plan={plan} />
-                {lastSubmittedInput ? (
-                  <Button type="button" onClick={handleRegenerate}>
-                    <RefreshCw aria-hidden="true" />
-                    重新生成
-                  </Button>
-                ) : null}
-              </div>
+              <PlanActions
+                plan={plan}
+                canRegenerate={lastSubmittedInput !== null}
+                onRegenerate={handleRegenerate}
+              />
               <TravelPlanView plan={plan} />
             </>
           ) : null}
