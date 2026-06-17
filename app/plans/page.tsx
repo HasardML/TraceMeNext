@@ -12,7 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getAllPlans } from "@/lib/store";
+import { deletePlan, getAllPlans } from "@/lib/store";
 import type { TravelPlan } from "@/types";
 
 export default function PlansPage() {
@@ -23,6 +23,11 @@ export default function PlansPage() {
   }, []);
 
   const hasPlans = plans !== null && plans.length > 0;
+
+  function handleDeletePlan(id: string) {
+    deletePlan(id);
+    setPlans(getAllPlans());
+  }
 
   return (
     <main className="min-h-[calc(100vh-3.5rem)] bg-background">
@@ -36,7 +41,7 @@ export default function PlansPage() {
         {hasPlans ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {plans.map((plan) => (
-              <PlanCard key={plan.id} plan={plan} />
+              <PlanCard key={plan.id} plan={plan} onDelete={handleDeletePlan} />
             ))}
           </div>
         ) : null}

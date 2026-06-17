@@ -1,17 +1,20 @@
 import Link from "next/link";
-import { CalendarDays, MapPin } from "lucide-react";
+import { CalendarDays, MapPin, Trash2 } from "lucide-react";
 
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import type { TravelPlan } from "@/types";
 
 type PlanCardProps = {
   plan: TravelPlan;
+  onDelete: (id: string) => void;
 };
 
 const dateFormatter = new Intl.DateTimeFormat("zh-CN", {
@@ -30,16 +33,24 @@ function formatDate(value: string) {
   return dateFormatter.format(date);
 }
 
-export function PlanCard({ plan }: PlanCardProps) {
+export function PlanCard({ plan, onDelete }: PlanCardProps) {
   const savedAt = plan.updatedAt || plan.createdAt;
 
+  function handleDelete() {
+    if (!window.confirm(`确定删除「${plan.title}」吗？`)) {
+      return;
+    }
+
+    onDelete(plan.id);
+  }
+
   return (
-    <Link
-      href={`/plans/${encodeURIComponent(plan.id)}`}
-      className="block h-full focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
-      aria-label={`查看计划：${plan.title}`}
-    >
-      <Card className="h-full transition-colors hover:border-primary/40 hover:bg-accent/30">
+    <Card className="h-full transition-colors hover:border-primary/40 hover:bg-accent/30">
+      <Link
+        href={`/plans/${encodeURIComponent(plan.id)}`}
+        className="block flex-1 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+        aria-label={`查看计划：${plan.title}`}
+      >
         <CardHeader>
           <CardTitle className="text-lg leading-6">{plan.title}</CardTitle>
           <CardDescription className="flex items-center gap-2">
@@ -67,7 +78,19 @@ export function PlanCard({ plan }: PlanCardProps) {
             </div>
           </dl>
         </CardContent>
-      </Card>
-    </Link>
+      </Link>
+
+      <CardFooter className="justify-end border-t">
+        <Button
+          type="button"
+          variant="destructive"
+          size="sm"
+          onClick={handleDelete}
+        >
+          <Trash2 aria-hidden="true" />
+          删除
+        </Button>
+      </CardFooter>
+    </Card>
   );
 }
