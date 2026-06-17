@@ -2,7 +2,7 @@
 
 ## 当前阶段
 
-P12 API 路由和 AI 调用
+P13 错误处理和重试
 
 ## 阶段状态
 
@@ -10,52 +10,61 @@ P12 API 路由和 AI 调用
 
 ## 当前目标
 
-创建服务端 API，接入 AI 模型，返回结构化 TravelPlan。
+让 AI 生成过程具备可控的错误分类、重试和超时处理。
 
 ## 前置确认
 
-- P11 Prompt 编写已完成
-- `TravelPlanSchema` 和 `TravelInputSchema` 已存在
-- D005 明确先用 Mock 跑通体验和数据流，再接入 AI
-- D007 明确使用 Vercel AI SDK + OpenAI provider，默认模型为 `gpt-4.1-mini`
+- P12 API 路由和 AI 调用已完成
+- `generateTravelPlan(input)` 已接入 Vercel AI SDK 的 `generateObject`
+- `POST /api/generate-plan` 已存在并返回结构化 TravelPlan
+- P13 不修改前端组件、Prompt、Schema 或流式输出
 
 ## 允许做的事
 
-- 安装 `ai` 和 `@ai-sdk/openai`
-- 创建 `.env.example`
-- 确认 `.env.local` 被 `.gitignore` 忽略
-- 在 `types/travel.ts` 导出 `AiOutputSchema` 和 `AiOutput`
-- 创建 `lib/ai.ts`
-- 创建 `app/api/generate-plan/route.ts`
-- 更新 `DECISIONS.md` 记录模型选择
-- 更新阶段文档记录 P12 边界
+- 创建 `lib/errors.ts`
+- 定义统一错误类型和 `TravelPlanError`
+- 实现 `classifyError(error)`
+- 为 `generateTravelPlan` 增加可控重试和 60 秒超时
+- 让 API route 捕获 `TravelPlanError` 并返回 `{ error, message }`
+- 更新阶段文档记录 P13 边界
 
 ## 禁止做的事
 
 - 修改前端组件
-- 修改 `app/page.tsx`
+- 修改 Prompt
+- 修改 Schema
+- 做前端错误展示
 - 做流式输出
-- 做前端联调
-- 保存 localStorage
-- 做地图、天气、登录、数据库或保存功能
 
 ## 完成标志
 
-- 已安装 `ai` 和 `@ai-sdk/openai`
-- `.env.example` 提供清晰示例变量且不包含真实 Key
-- `.env.local` 被 `.gitignore` 忽略，`.env.example` 可提交
-- `AiOutputSchema` 从 `TravelPlanSchema` 派生并排除服务端元数据字段
-- `generateTravelPlan(input)` 使用 `generateObject`、Prompt 构建函数和 `AiOutputSchema`
-- AI 输出补齐 `id`、`createdAt`、`updatedAt`、`inputParams` 后通过 `TravelPlanSchema.parse`
-- `POST /api/generate-plan` 校验输入、调用 AI 并返回 TravelPlan JSON
-- 输入错误返回 400
-- API Key 缺失返回友好错误
-- 不做流式输出、前端联调、保存功能或组件修改
+- 已创建 `lib/errors.ts`
+- 已定义以下错误类型：
+  - `VALIDATION_ERROR`
+  - `AI_GENERATION_ERROR`
+  - `AI_PARSE_ERROR`
+  - `NETWORK_ERROR`
+  - `API_KEY_ERROR`
+  - `RATE_LIMIT_ERROR`
+  - `TIMEOUT_ERROR`
+  - `UNKNOWN_ERROR`
+- `TravelPlanError` 保存 `type`、`userMessage` 和可选 `originalError`
+- `classifyError(error)` 可识别校验、AI 生成、AI 解析、网络、API Key、限流、超时和未知错误
+- `generateTravelPlan(input, { maxRetries })` 默认最多重试 1 次
+- 每次重试前等待 1 秒
+- 单次 AI 生成调用设置 60 秒超时
+- API route 返回统一错误格式 `{ error, message }`
+- `VALIDATION_ERROR` 返回 400
+- `API_KEY_ERROR` 返回 500，因为当前 Key 是服务端配置问题，不是客户端认证失败
+- `RATE_LIMIT_ERROR` 返回 429
+- `TIMEOUT_ERROR` 返回 504
+- 其他错误返回 500
 - `npm run lint` 通过
 - `npm run build` 通过
 
 ## 本阶段交付
 
-- 服务端 AI 生成函数
-- 结构化 TravelPlan API route
-- 环境变量示例和模型选择决策记录
+- 统一服务端错误分类
+- 可控的 AI 生成重试流程
+- AI 生成 60 秒超时保护
+- API route 统一错误响应格式

@@ -1,61 +1,63 @@
 import { NextResponse } from "next/server";
-import { ZodError } from "zod";
 
-import { generateTravelPlan, MissingAiApiKeyError } from "@/lib/ai";
+import { generateTravelPlan } from "@/lib/ai";
+import {
+  classifyError,
+  TravelPlanError,
+  TravelPlanErrorTypes,
+  type TravelPlanErrorType,
+} from "@/lib/errors";
 import { TravelInputSchema } from "@/types";
 
+const ERROR_STATUS: Record<TravelPlanErrorType, number> = {
+  [TravelPlanErrorTypes.VALIDATION_ERROR]: 400,
+  [TravelPlanErrorTypes.AI_GENERATION_ERROR]: 500,
+  [TravelPlanErrorTypes.AI_PARSE_ERROR]: 500,
+  [TravelPlanErrorTypes.NETWORK_ERROR]: 500,
+  [TravelPlanErrorTypes.API_KEY_ERROR]: 500,
+  [TravelPlanErrorTypes.RATE_LIMIT_ERROR]: 429,
+  [TravelPlanErrorTypes.TIMEOUT_ERROR]: 504,
+  [TravelPlanErrorTypes.UNKNOWN_ERROR]: 500,
+};
+
 export async function POST(request: Request) {
-  let body: unknown;
-
   try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json(
-      { error: "请求体必须是合法 JSON。" },
-      { status: 400 },
-    );
-  }
+    let body: unknown;
 
-  const inputResult = TravelInputSchema.safeParse(body);
+    try {
+      body = await request.json();
+    } catch (error) {
+      throw new TravelPlanError({
+        type: TravelPlanErrorTypes.VALIDATION_ERROR,
+        userMessage: "请求体必须是合法 JSON。",
+        originalError: error,
+      });
+    }
 
-  if (!inputResult.success) {
-    return NextResponse.json(
-      {
-        error: "旅行需求参数不合法。",
-        issues: inputResult.error.issues.map((issue) => ({
-          path: issue.path.join("."),
-          message: issue.message,
-        })),
-      },
-      { status: 400 },
-    );
-  }
+    const inputResult = TravelInputSchema.safeParse(body);
 
-  try {
-    const plan = await generateTravelPlan(inputResult.data);
+    if (!inputResult.success) {
+      throw new TravelPlanError({
+        type: TravelPlanErrorTypes.VALIDATION_ERROR,
+        userMessage: "旅行需求参数不合法。",
+        originalError: inputResult.error,
+      });
+    }
 
-    return NextResponse.json(plan);
+    return NextResponse.json(await generateTravelPlan(inputResult.data));
   } catch (error) {
-    if (error instanceof MissingAiApiKeyError) {
-      return NextResponse.json(
-        {
-          error:
-            "服务端尚未配置 OpenAI API Key。请在 .env.local 中添加 OPENAI_API_KEY 后重试。",
-        },
-        { status: 500 },
-      );
-    }
-
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: "AI 返回的数据结构不符合 TravelPlan 格式，请稍后重试。" },
-        { status: 502 },
-      );
-    }
-
-    return NextResponse.json(
-      { error: "生成旅行计划失败，请稍后重试。" },
-      { status: 500 },
+    return buildErrorResponse(
+      error instanceof TravelPlanError ? error : classifyError(error),
     );
   }
+}
+
+function buildErrorResponse(error: TravelPlanError) {
+  return NextResponse.json(
+    {
+      error: error.type,
+      message: error.userMessage,
+    },
+    { status: ERROR_STATUS[error.type] },
+  );
 }
