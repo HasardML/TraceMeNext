@@ -22,9 +22,16 @@ import {
 } from "@/components/ui/card";
 import { fetchTravelPlan } from "@/lib/api";
 import { deletePlan, getPlan, updatePlan } from "@/lib/store";
-import type { TravelItem, TravelPlan } from "@/types";
+import type { TravelDay, TravelItem, TravelPlan } from "@/types";
 
 const REGENERATE_TIMEOUT_MS = 60_000;
+
+function renumberDays(days: TravelDay[]) {
+  return days.map((day, index) => ({
+    ...day,
+    day: index + 1,
+  }));
+}
 
 export default function PlanDetailPage() {
   const params = useParams<{ id: string }>();
@@ -126,7 +133,10 @@ export default function PlanDetailPage() {
 
     setActionError(null);
 
-    const savedPlan = updatePlan(plan.id, { days });
+    const savedPlan = updatePlan(plan.id, {
+      days,
+      totalDays: days.length,
+    });
 
     if (!savedPlan) {
       setActionError("保存修改失败，请稍后再试。");
@@ -181,6 +191,98 @@ export default function PlanDetailPage() {
 
     if (!didFindItem) {
       setActionError("没有找到要编辑的行程项。");
+      return false;
+    }
+
+    return Boolean(persistPlanDays(nextDays));
+  }
+
+  function handleDayItemAdd(dayNumber: number, item: TravelItem) {
+    if (!plan) {
+      return false;
+    }
+
+    let didFindDay = false;
+    const nextDays = plan.days.map((day) => {
+      if (day.day !== dayNumber) {
+        return day;
+      }
+
+      didFindDay = true;
+
+      return {
+        ...day,
+        items: [...day.items, item],
+      };
+    });
+
+    if (!didFindDay) {
+      setActionError("没有找到要添加行程的日期。");
+      return false;
+    }
+
+    return Boolean(persistPlanDays(nextDays));
+  }
+
+  function handleDayItemDelete(dayNumber: number, itemIndex: number) {
+    if (!plan) {
+      return false;
+    }
+
+    let didFindItem = false;
+    const nextDays = plan.days.map((day) => {
+      if (day.day !== dayNumber || !day.items[itemIndex]) {
+        return day;
+      }
+
+      didFindItem = true;
+
+      return {
+        ...day,
+        items: day.items.filter((_, currentIndex) => currentIndex !== itemIndex),
+      };
+    });
+
+    if (!didFindItem) {
+      setActionError("没有找到要删除的行程项。");
+      return false;
+    }
+
+    return Boolean(persistPlanDays(nextDays));
+  }
+
+  function handleDayAdd() {
+    if (!plan) {
+      return;
+    }
+
+    const nextDayNumber =
+      Math.max(0, ...plan.days.map((currentDay) => currentDay.day)) + 1;
+    const nextDay: TravelDay = {
+      day: nextDayNumber,
+      theme: "新的行程",
+      items: [],
+    };
+
+    persistPlanDays([...plan.days, nextDay]);
+  }
+
+  function handleDayDelete(dayNumber: number) {
+    if (!plan) {
+      return false;
+    }
+
+    if (plan.days.length <= 1) {
+      setActionError("至少需要保留 1 天。");
+      return false;
+    }
+
+    const nextDays = renumberDays(
+      plan.days.filter((day) => day.day !== dayNumber),
+    );
+
+    if (nextDays.length === plan.days.length) {
+      setActionError("没有找到要删除的日期。");
       return false;
     }
 
@@ -272,6 +374,10 @@ export default function PlanDetailPage() {
               currency={plan.currency}
               onThemeSave={handleDayThemeSave}
               onItemSave={handleDayItemSave}
+              onItemAdd={handleDayItemAdd}
+              onItemDelete={handleDayItemDelete}
+              onDayAdd={handleDayAdd}
+              onDayDelete={handleDayDelete}
             />
             <BudgetCard budget={plan.budget} currency={plan.currency} />
             <PackingList packingList={plan.packingList} />

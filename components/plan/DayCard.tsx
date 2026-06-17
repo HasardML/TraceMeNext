@@ -7,8 +7,10 @@ import {
   Hotel,
   Landmark,
   Pencil,
+  Plus,
   ShoppingBag,
   Train,
+  Trash2,
   Utensils,
   X,
   type LucideIcon,
@@ -44,6 +46,10 @@ type DayCardProps = {
     itemIndex: number,
     item: TravelItem,
   ) => boolean | void;
+  onItemAdd?: (dayNumber: number, item: TravelItem) => boolean | void;
+  onItemDelete?: (dayNumber: number, itemIndex: number) => boolean | void;
+  onDayDelete?: (dayNumber: number) => boolean | void;
+  canDeleteDay?: boolean;
 };
 
 type TravelItemDraft = Omit<TravelItem, "cost"> & {
@@ -94,6 +100,13 @@ const itemTypeOptions = Object.entries(itemTypeConfig) as Array<
   [TravelItem["type"], ItemTypeConfig]
 >;
 
+const defaultTravelItem: TravelItem = {
+  time: "09:00",
+  place: "",
+  type: "attraction",
+  description: "",
+};
+
 function formatCost(cost: number, currency: string) {
   return `${currency} ${costFormatter.format(cost)}`;
 }
@@ -134,6 +147,10 @@ export function DayCard({
   currency,
   onThemeSave,
   onItemSave,
+  onItemAdd,
+  onItemDelete,
+  onDayDelete,
+  canDeleteDay = false,
 }: DayCardProps) {
   const [editingItemIndex, setEditingItemIndex] = useState<number | null>(null);
   const [itemDraft, setItemDraft] = useState<TravelItemDraft | null>(null);
@@ -178,24 +195,83 @@ export function DayCard({
     cancelItemEditing();
   }
 
+  function addItem() {
+    if (!onItemAdd) {
+      return;
+    }
+
+    const nextItem = { ...defaultTravelItem };
+    const didAdd = onItemAdd(day.day, nextItem);
+
+    if (didAdd === false) {
+      return;
+    }
+
+    setEditingItemIndex(day.items.length);
+    setItemDraft(createItemDraft(nextItem));
+    setItemEditError(null);
+  }
+
+  function deleteItem(index: number) {
+    if (
+      !onItemDelete ||
+      !window.confirm(`确定删除第 ${day.day} 天的这条行程吗？`)
+    ) {
+      return;
+    }
+
+    const didDelete = onItemDelete(day.day, index);
+
+    if (didDelete === false) {
+      return;
+    }
+
+    cancelItemEditing();
+  }
+
+  function deleteDay() {
+    if (!onDayDelete || !window.confirm(`确定删除第 ${day.day} 天吗？`)) {
+      return;
+    }
+
+    onDayDelete(day.day);
+  }
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex flex-col gap-1 text-lg sm:flex-row sm:items-baseline sm:gap-3">
-          <span>第 {day.day} 天</span>
-          {onThemeSave ? (
-            <EditableText
-              value={day.theme}
-              onSave={(theme) => onThemeSave(day.day, theme)}
-              className="text-base font-medium text-muted-foreground"
-              placeholder="每日主题"
-            />
-          ) : (
-            <span className="text-base font-medium text-muted-foreground">
-              {day.theme}
-            </span>
-          )}
-        </CardTitle>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <CardTitle className="flex flex-col gap-1 text-lg sm:flex-row sm:items-baseline sm:gap-3">
+            <span>第 {day.day} 天</span>
+            {onThemeSave ? (
+              <EditableText
+                value={day.theme}
+                onSave={(theme) => onThemeSave(day.day, theme)}
+                className="text-base font-medium text-muted-foreground"
+                placeholder="每日主题"
+              />
+            ) : (
+              <span className="text-base font-medium text-muted-foreground">
+                {day.theme}
+              </span>
+            )}
+          </CardTitle>
+
+          {onDayDelete ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={deleteDay}
+              disabled={!canDeleteDay}
+              title={canDeleteDay ? "删除此天" : "至少需要保留 1 天"}
+              className="self-start text-destructive hover:text-destructive"
+            >
+              <Trash2 aria-hidden="true" />
+              <span className="sm:inline">删除此天</span>
+            </Button>
+          ) : null}
+        </div>
       </CardHeader>
 
       <CardContent>
@@ -303,6 +379,17 @@ export function DayCard({
                       ) : null}
 
                       <div className="flex flex-wrap justify-end gap-2">
+                        {onItemDelete ? (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => deleteItem(index)}
+                            className="mr-auto text-destructive hover:text-destructive"
+                          >
+                            <Trash2 aria-hidden="true" />
+                            删除
+                          </Button>
+                        ) : null}
                         <Button
                           type="button"
                           variant="outline"
@@ -344,7 +431,7 @@ export function DayCard({
                               {config.label}
                             </span>
                             <h3 className="text-base font-semibold text-foreground">
-                              {item.place}
+                              {item.place || "未填写地点"}
                             </h3>
                           </div>
                         </div>
@@ -368,11 +455,25 @@ export function DayCard({
                               <Pencil aria-hidden="true" />
                             </Button>
                           ) : null}
+
+                          {onItemDelete ? (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              onClick={() => deleteItem(index)}
+                              aria-label="删除行程项"
+                              title="删除行程项"
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Trash2 aria-hidden="true" />
+                            </Button>
+                          ) : null}
                         </div>
                       </div>
 
                       <p className="text-sm leading-6 text-muted-foreground">
-                        {item.description}
+                        {item.description || "暂无描述"}
                       </p>
                     </div>
                   </>
@@ -381,6 +482,18 @@ export function DayCard({
             );
           })}
         </ol>
+
+        {onItemAdd ? (
+          <Button
+            type="button"
+            variant="outline"
+            className="mt-4 w-full"
+            onClick={addItem}
+          >
+            <Plus aria-hidden="true" />
+            添加行程
+          </Button>
+        ) : null}
       </CardContent>
     </Card>
   );
