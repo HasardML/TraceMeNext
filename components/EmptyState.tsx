@@ -19,7 +19,7 @@ export function EmptyState() {
         </div>
         <CardTitle className="text-xl">还没有旅行计划</CardTitle>
         <CardDescription>
-          填写左侧需求并提交后，这里会展示完整的 Mock 旅行计划。
+          填写左侧需求并提交后，这里会展示完整的旅行计划。
         </CardDescription>
       </CardHeader>
     </Card>

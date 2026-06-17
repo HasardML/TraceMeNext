@@ -1,52 +1,35 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 
 import { EmptyState } from "@/components/EmptyState";
 import { LoadingState } from "@/components/LoadingState";
 import { TravelPlanView } from "@/components/plan";
 import { TravelForm } from "@/components/TravelForm";
-import { mockTravelPlan } from "@/lib/mock-data";
+import { fetchTravelPlan } from "@/lib/api";
 import type { TravelInput, TravelPlan } from "@/types";
 
 export default function Home() {
   const [plan, setPlan] = useState<TravelPlan | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const loadingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    return () => {
-      if (loadingTimerRef.current) {
-        clearTimeout(loadingTimerRef.current);
-      }
-    };
-  }, []);
-
-  function handleSubmit(input: TravelInput) {
-    if (loadingTimerRef.current) {
-      clearTimeout(loadingTimerRef.current);
-    }
-
+  async function handleSubmit(input: TravelInput) {
     setPlan(null);
+    setError(null);
     setIsLoading(true);
 
-    const delay = 1000 + Math.random() * 1000;
-
-    loadingTimerRef.current = setTimeout(() => {
-      setPlan({
-        ...mockTravelPlan,
-        title: `${input.destination} ${input.days} 天游玩计划`,
-        summary: `基于你填写的 ${input.destination} 行程需求生成的 Mock 预览。后续 API 阶段会替换为实时规划结果。`,
-        destination: input.destination,
-        totalDays: input.days,
-        totalBudget: input.budget ?? mockTravelPlan.totalBudget,
-        currency: input.currency,
-        inputParams: input,
-        updatedAt: new Date().toISOString(),
-      });
+    try {
+      setPlan(await fetchTravelPlan(input));
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "生成旅行计划失败，请稍后再试。",
+      );
+    } finally {
       setIsLoading(false);
-      loadingTimerRef.current = null;
-    }, delay);
+    }
   }
 
   return (
@@ -58,8 +41,17 @@ export default function Home() {
 
         <section className="space-y-6 lg:col-span-2">
           {isLoading ? <LoadingState /> : null}
+          {!isLoading && error ? (
+            <div
+              role="alert"
+              className="rounded-lg border border-red-200 bg-red-50 p-5 text-sm text-red-700"
+            >
+              <p className="font-medium">生成失败</p>
+              <p className="mt-1">{error}</p>
+            </div>
+          ) : null}
           {!isLoading && plan ? <TravelPlanView plan={plan} /> : null}
-          {!isLoading && !plan ? <EmptyState /> : null}
+          {!isLoading && !plan && !error ? <EmptyState /> : null}
         </section>
       </div>
     </main>

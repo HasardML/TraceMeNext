@@ -2,7 +2,7 @@
 
 ## 当前阶段
 
-P13 错误处理和重试
+P14 前端替换为真实 AI
 
 ## 阶段状态
 
@@ -10,61 +10,57 @@ P13 错误处理和重试
 
 ## 当前目标
 
-让 AI 生成过程具备可控的错误分类、重试和超时处理。
+把首页的 Mock 生成替换为真实 API 调用，完成 AI 生成闭环。
 
 ## 前置确认
 
 - P12 API 路由和 AI 调用已完成
-- `generateTravelPlan(input)` 已接入 Vercel AI SDK 的 `generateObject`
+- P13 错误处理和重试已完成
 - `POST /api/generate-plan` 已存在并返回结构化 TravelPlan
-- P13 不修改前端组件、Prompt、Schema 或流式输出
+- API route 失败时返回 `{ error, message }`
+- P14 不修改 API route、Prompt、展示组件、保存逻辑或流式输出
+- 验收后按 P3 反馈修正 `EmptyState` 中过时的 Mock 文案
 
 ## 允许做的事
 
-- 创建 `lib/errors.ts`
-- 定义统一错误类型和 `TravelPlanError`
-- 实现 `classifyError(error)`
-- 为 `generateTravelPlan` 增加可控重试和 60 秒超时
-- 让 API route 捕获 `TravelPlanError` 并返回 `{ error, message }`
-- 更新阶段文档记录 P13 边界
+- 创建 `lib/api.ts`
+- 实现 `fetchTravelPlan(input)`
+- 修改首页表单提交逻辑调用真实 API
+- 保留 loading 状态
+- 增加首页错误状态和错误展示
+- 保留 `lib/mock-data.ts`
 
 ## 禁止做的事
 
-- 修改前端组件
+- 修改 API route
 - 修改 Prompt
-- 修改 Schema
-- 做前端错误展示
+- 修改展示组件
+- 做保存
 - 做流式输出
+- 做重新生成细节优化
+- 删除 `lib/mock-data.ts`
 
 ## 完成标志
 
-- 已创建 `lib/errors.ts`
-- 已定义以下错误类型：
-  - `VALIDATION_ERROR`
-  - `AI_GENERATION_ERROR`
-  - `AI_PARSE_ERROR`
-  - `NETWORK_ERROR`
-  - `API_KEY_ERROR`
-  - `RATE_LIMIT_ERROR`
-  - `TIMEOUT_ERROR`
-  - `UNKNOWN_ERROR`
-- `TravelPlanError` 保存 `type`、`userMessage` 和可选 `originalError`
-- `classifyError(error)` 可识别校验、AI 生成、AI 解析、网络、API Key、限流、超时和未知错误
-- `generateTravelPlan(input, { maxRetries })` 默认最多重试 1 次
-- 每次重试前等待 1 秒
-- 单次 AI 生成调用设置 60 秒超时
-- API route 返回统一错误格式 `{ error, message }`
-- `VALIDATION_ERROR` 返回 400
-- `API_KEY_ERROR` 返回 500，因为当前 Key 是服务端配置问题，不是客户端认证失败
-- `RATE_LIMIT_ERROR` 返回 429
-- `TIMEOUT_ERROR` 返回 504
-- 其他错误返回 500
+- 已创建 `lib/api.ts`
+- `fetchTravelPlan(input)` 使用 `POST /api/generate-plan`
+- 请求包含 `Content-Type: application/json`
+- 非 2xx 响应会读取错误 `message` 并抛出异常
+- 成功响应会返回 `TravelPlan`
+- 首页提交表单时调用 `fetchTravelPlan`
+- 首页已移除 `setTimeout` Mock 生成逻辑
+- 首页不再直接使用 `mockTravelPlan` 生成结果
+- 首页保留 loading 状态
+- 首页增加 error 状态
+- API 失败时首页展示错误
+- `lib/mock-data.ts` 保留
+- `EmptyState` 不再提示 Mock 旅行计划
 - `npm run lint` 通过
 - `npm run build` 通过
 
 ## 本阶段交付
 
-- 统一服务端错误分类
-- 可控的 AI 生成重试流程
-- AI 生成 60 秒超时保护
-- API route 统一错误响应格式
+- 前端真实调用 AI 生成 API
+- 首页从 Mock 闭环进入真实 AI 生成闭环
+- API 错误信息可在首页反馈给用户
+- 空状态文案与真实 AI 生成阶段保持一致
