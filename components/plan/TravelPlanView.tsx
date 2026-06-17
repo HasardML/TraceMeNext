@@ -1,3 +1,4 @@
+import { Disclaimer } from "@/components/Disclaimer";
 import { BudgetCard } from "@/components/plan/BudgetCard";
 import { DayList } from "@/components/plan/DayList";
 import { PackingList } from "@/components/plan/PackingList";
@@ -17,6 +18,7 @@ export function TravelPlanView({ plan }: TravelPlanViewProps) {
       <BudgetCard budget={plan.budget} currency={plan.currency} />
       <PackingList packingList={plan.packingList} />
       <TipsCard tips={plan.tips} />
+      <Disclaimer />
     </>
   );
 }

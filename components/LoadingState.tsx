@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { LoaderCircle } from "lucide-react";
 
 import {
@@ -9,6 +12,25 @@ import {
 } from "@/components/ui/card";
 
 export function LoadingState() {
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+  useEffect(() => {
+    const timerId = window.setInterval(() => {
+      setElapsedSeconds((current) => current + 1);
+    }, 1000);
+
+    return () => {
+      window.clearInterval(timerId);
+    };
+  }, []);
+
+  const waitingMessage =
+    elapsedSeconds >= 45
+      ? "如果等待过久，可以稍后重试"
+      : elapsedSeconds >= 15
+        ? "生成时间较长，请耐心等待"
+        : "正在整理行程、预算、行前清单和注意事项。";
+
   return (
     <Card className="min-h-[22rem] justify-center">
       <CardHeader className="text-center">
@@ -19,9 +41,10 @@ export function LoadingState() {
           />
         </div>
         <CardTitle className="text-xl">正在生成旅行计划</CardTitle>
-        <CardDescription>
-          正在整理行程、预算、行前清单和注意事项。
-        </CardDescription>
+        <CardDescription>{waitingMessage}</CardDescription>
+        <p className="text-sm text-muted-foreground">
+          已等待 {elapsedSeconds} 秒
+        </p>
       </CardHeader>
 
       <CardContent>

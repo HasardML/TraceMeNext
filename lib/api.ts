@@ -22,6 +22,7 @@ function getErrorMessage(data: unknown): string {
 
 export async function fetchTravelPlan(
   input: TravelInput,
+  signal?: AbortSignal,
 ): Promise<TravelPlan> {
   const response = await fetch("/api/generate-plan", {
     method: "POST",
@@ -29,6 +30,7 @@ export async function fetchTravelPlan(
       "Content-Type": "application/json",
     },
     body: JSON.stringify(input),
+    signal,
   });
 
   if (!response.ok) {
