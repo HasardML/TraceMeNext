@@ -5,7 +5,14 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, FileQuestion, RefreshCw, Trash2 } from "lucide-react";
 
-import { TravelPlanView } from "@/components/plan";
+import { Disclaimer } from "@/components/Disclaimer";
+import {
+  BudgetCard,
+  DayList,
+  PackingList,
+  PlanOverview,
+  TipsCard,
+} from "@/components/plan";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -25,12 +32,12 @@ export default function PlanDetailPage() {
   const [plan, setPlan] = useState<TravelPlan | null>(null);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
-  const [regenerateError, setRegenerateError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
     setHasLoaded(false);
     setPlan(getPlan(params.id));
-    setRegenerateError(null);
+    setActionError(null);
     setIsRegenerating(false);
     setHasLoaded(true);
   }, [params.id]);
@@ -56,7 +63,7 @@ export default function PlanDetailPage() {
       controller.abort();
     }, REGENERATE_TIMEOUT_MS);
 
-    setRegenerateError(null);
+    setActionError(null);
     setIsRegenerating(true);
 
     try {
@@ -72,16 +79,16 @@ export default function PlanDetailPage() {
       });
 
       if (!savedPlan) {
-        setRegenerateError("重新生成成功，但保存到本地计划失败。");
+        setActionError("重新生成成功，但保存到本地计划失败。");
         return;
       }
 
       setPlan(savedPlan);
     } catch (error) {
       if (didTimeout) {
-        setRegenerateError("生成超过 60 秒，已取消请求，请稍后重试。");
+        setActionError("生成超过 60 秒，已取消请求，请稍后重试。");
       } else {
-        setRegenerateError(
+        setActionError(
           error instanceof Error
             ? error.message
             : "重新生成旅行计划失败，请稍后再试。",
@@ -91,6 +98,25 @@ export default function PlanDetailPage() {
       window.clearTimeout(timeoutId);
       setIsRegenerating(false);
     }
+  }
+
+  function handlePlanTextSave(
+    updates: Partial<Pick<TravelPlan, "title" | "summary">>,
+  ) {
+    if (!plan) {
+      return;
+    }
+
+    setActionError(null);
+
+    const savedPlan = updatePlan(plan.id, updates);
+
+    if (!savedPlan) {
+      setActionError("保存修改失败，请稍后再试。");
+      return;
+    }
+
+    setPlan(savedPlan);
   }
 
   const canRegenerate = Boolean(plan?.inputParams);
@@ -160,15 +186,24 @@ export default function PlanDetailPage() {
 
         {hasLoaded && plan ? (
           <div className="space-y-4">
-            {regenerateError ? (
+            {actionError ? (
               <div
                 role="alert"
                 className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700"
               >
-                {regenerateError}
+                {actionError}
               </div>
             ) : null}
-            <TravelPlanView plan={plan} />
+            <PlanOverview
+              plan={plan}
+              onTitleSave={(title) => handlePlanTextSave({ title })}
+              onSummarySave={(summary) => handlePlanTextSave({ summary })}
+            />
+            <DayList days={plan.days} currency={plan.currency} />
+            <BudgetCard budget={plan.budget} currency={plan.currency} />
+            <PackingList packingList={plan.packingList} />
+            <TipsCard tips={plan.tips} />
+            <Disclaimer />
           </div>
         ) : null}
 

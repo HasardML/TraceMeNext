@@ -5,10 +5,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { EditableText } from "@/components/EditableText";
 import type { TravelPlan } from "@/types";
 
 type PlanOverviewProps = {
   plan: TravelPlan;
+  onTitleSave?: (title: string) => void;
+  onSummarySave?: (summary: string) => void;
 };
 
 const dateFormatter = new Intl.DateTimeFormat("zh-CN", {
@@ -29,7 +32,11 @@ function formatDate(value: string) {
   return dateFormatter.format(date);
 }
 
-export function PlanOverview({ plan }: PlanOverviewProps) {
+export function PlanOverview({
+  plan,
+  onTitleSave,
+  onSummarySave,
+}: PlanOverviewProps) {
   const details = [
     { label: "目的地", value: plan.destination },
     { label: "旅行天数", value: `${plan.totalDays} 天` },
@@ -43,8 +50,30 @@ export function PlanOverview({ plan }: PlanOverviewProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl">{plan.title}</CardTitle>
-        <CardDescription className="leading-6">{plan.summary}</CardDescription>
+        <CardTitle className="text-xl">
+          {onTitleSave ? (
+            <EditableText
+              value={plan.title}
+              onSave={onTitleSave}
+              placeholder="计划标题"
+            />
+          ) : (
+            plan.title
+          )}
+        </CardTitle>
+        <CardDescription className="leading-6">
+          {onSummarySave ? (
+            <EditableText
+              value={plan.summary}
+              onSave={onSummarySave}
+              as="textarea"
+              placeholder="计划概述"
+              className="leading-6"
+            />
+          ) : (
+            plan.summary
+          )}
+        </CardDescription>
       </CardHeader>
 
       <CardContent>
