@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/card";
 import { fetchTravelPlan } from "@/lib/api";
 import { deletePlan, getPlan, updatePlan } from "@/lib/store";
-import type { TravelPlan } from "@/types";
+import type { TravelItem, TravelPlan } from "@/types";
 
 const REGENERATE_TIMEOUT_MS = 60_000;
 
@@ -119,6 +119,74 @@ export default function PlanDetailPage() {
     setPlan(savedPlan);
   }
 
+  function persistPlanDays(days: TravelPlan["days"]) {
+    if (!plan) {
+      return null;
+    }
+
+    setActionError(null);
+
+    const savedPlan = updatePlan(plan.id, { days });
+
+    if (!savedPlan) {
+      setActionError("保存修改失败，请稍后再试。");
+      return null;
+    }
+
+    setPlan(savedPlan);
+    return savedPlan;
+  }
+
+  function handleDayThemeSave(dayNumber: number, theme: string) {
+    if (!plan) {
+      return;
+    }
+
+    persistPlanDays(
+      plan.days.map((day) =>
+        day.day === dayNumber
+          ? {
+              ...day,
+              theme,
+            }
+          : day,
+      ),
+    );
+  }
+
+  function handleDayItemSave(
+    dayNumber: number,
+    itemIndex: number,
+    item: TravelItem,
+  ) {
+    if (!plan) {
+      return false;
+    }
+
+    let didFindItem = false;
+    const nextDays = plan.days.map((day) => {
+      if (day.day !== dayNumber || !day.items[itemIndex]) {
+        return day;
+      }
+
+      didFindItem = true;
+
+      return {
+        ...day,
+        items: day.items.map((currentItem, currentIndex) =>
+          currentIndex === itemIndex ? item : currentItem,
+        ),
+      };
+    });
+
+    if (!didFindItem) {
+      setActionError("没有找到要编辑的行程项。");
+      return false;
+    }
+
+    return Boolean(persistPlanDays(nextDays));
+  }
+
   const canRegenerate = Boolean(plan?.inputParams);
 
   return (
@@ -199,7 +267,12 @@ export default function PlanDetailPage() {
               onTitleSave={(title) => handlePlanTextSave({ title })}
               onSummarySave={(summary) => handlePlanTextSave({ summary })}
             />
-            <DayList days={plan.days} currency={plan.currency} />
+            <DayList
+              days={plan.days}
+              currency={plan.currency}
+              onThemeSave={handleDayThemeSave}
+              onItemSave={handleDayItemSave}
+            />
             <BudgetCard budget={plan.budget} currency={plan.currency} />
             <PackingList packingList={plan.packingList} />
             <TipsCard tips={plan.tips} />
