@@ -2,7 +2,7 @@
 
 ## 当前阶段
 
-P16 localStorage 封装
+P17 保存计划
 
 ## 阶段状态
 
@@ -10,47 +10,41 @@ P16 localStorage 封装
 
 ## 当前目标
 
-封装旅行计划本地存储逻辑，为后续保存计划和计划管理页面提供基础能力。
+生成旅行计划后，用户可以将当前计划保存到 localStorage。
 
 ## 前置确认
 
-- P15 Loading、超时、免责声明已完成
-- `TravelPlanSchema` 已定义
+- P16 localStorage 封装已完成
+- `lib/store.ts` 已存在
 - 决策 D003 明确 localStorage 优先
-- P16 暂不接入 UI
+- 首页已接入真实 AI 生成结果
 
 ## 允许做的事
 
-- 新增或修改 `lib/store.ts`
+- 修改 `app/page.tsx`
+- 可新增轻量保存按钮组件
 - 修改 `CURRENT_PHASE.md`
 
 ## 禁止做的事
 
-- 不修改页面
-- 不修改组件
-- 不添加保存按钮
-- 不安装依赖
+- 不创建计划列表页
+- 不创建详情页
+- 不做编辑
+- 不做导出
+- 不引入 Toast
 - 不修改 Schema
 
 ## 完成标志
 
-- 定义本地存储 key：`travel-plans`
-- 实现 `savePlan(plan: TravelPlan): void`
-- `savePlan` 保存前使用 `TravelPlanSchema.parse`
-- `savePlan` 在 id 已存在时更新计划
-- 更新已有计划时刷新 `updatedAt`
-- 实现 `getPlan(id: string): TravelPlan | null`
-- 实现 `getAllPlans(): TravelPlan[]`
-- `getAllPlans` 按 `updatedAt` 倒序返回
-- 实现 `deletePlan(id: string): void`
-- 实现 `updatePlan(id: string, updates: Partial<TravelPlan>): TravelPlan | null`
-- 所有读取都有 `try/catch` 兜底
-- SSR 或 localStorage 不可用时安全降级
+- 首页结果区域显示“保存计划”按钮
+- 点击按钮调用 `savePlan(plan)`
+- 保存成功后按钮文案显示“已保存”
+- 当前计划已存在于 localStorage 时按钮显示“已保存”
+- 重新生成或生成新计划后恢复为可保存状态
 - `npm run lint` 通过
 - `npm run build` 通过
 
 ## 本阶段交付
 
-- 本地存储访问集中封装在 `lib/store.ts`
-- 页面和组件暂不接入保存能力
-- 后续 P17 可直接调用存储函数实现保存计划
+- 首页生成结果可保存到 localStorage
+- 保存状态通过当前计划 id 是否存在于本地存储中判断

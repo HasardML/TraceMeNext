@@ -6,6 +6,7 @@ import { RefreshCw } from "lucide-react";
 import { EmptyState } from "@/components/EmptyState";
 import { LoadingState } from "@/components/LoadingState";
 import { TravelPlanView } from "@/components/plan";
+import { SavePlanButton } from "@/components/plan/SavePlanButton";
 import { TravelForm } from "@/components/TravelForm";
 import { Button } from "@/components/ui/button";
 import { fetchTravelPlan } from "@/lib/api";
@@ -83,14 +84,15 @@ export default function Home() {
           ) : null}
           {!isLoading && plan ? (
             <>
-              {lastSubmittedInput ? (
-                <div className="flex justify-end">
+              <div className="flex flex-wrap justify-end gap-2">
+                <SavePlanButton plan={plan} />
+                {lastSubmittedInput ? (
                   <Button type="button" onClick={handleRegenerate}>
                     <RefreshCw aria-hidden="true" />
                     重新生成
                   </Button>
-                </div>
-              ) : null}
+                ) : null}
+              </div>
               <TravelPlanView plan={plan} />
             </>
           ) : null}
