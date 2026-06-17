@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TraceMe Next
 
-## Getting Started
+迹遇 Next 是一个基于 Next.js App Router 的 AI 旅行规划器。当前阶段已完成 Mock 闭环、Prompt 编写，以及服务端 AI 生成 API。
 
-First, run the development server:
+## 开发环境
+
+安装依赖：
+
+```bash
+npm install
+```
+
+启动开发服务器：
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+本地访问：
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```text
+http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 环境变量
 
-## Learn More
+复制 `.env.example` 为 `.env.local`，并填入服务端使用的 OpenAI API Key：
 
-To learn more about Next.js, take a look at the following resources:
+```env
+OPENAI_API_KEY=
+OPENAI_MODEL=gpt-4.1-mini
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+`OPENAI_MODEL` 可选；不配置时服务端默认使用 `gpt-4.1-mini`。
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## API 测试
 
-## Deploy on Vercel
+生成旅行计划：
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+curl -X POST http://localhost:3000/api/generate-plan \
+  -H "Content-Type: application/json" \
+  -d '{"destination":"成都","days":3,"travelers":2,"currency":"CNY","preferences":["美食","博物馆"],"pace":"moderate"}'
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+成功时返回结构化 `TravelPlan` JSON。非法输入返回 `400`，缺少 `OPENAI_API_KEY` 时返回友好的服务端配置错误。
+
+## 常用命令
+
+```bash
+npm run lint
+npm run build
+```
+
+## 阶段文档
+
+- `ROADMAP.md`：阶段进度
+- `CURRENT_PHASE.md`：当前阶段边界和完成标志
+- `DECISIONS.md`：技术与产品决策

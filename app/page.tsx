@@ -7,7 +7,7 @@ import { LoadingState } from "@/components/LoadingState";
 import { TravelPlanView } from "@/components/plan";
 import { TravelForm } from "@/components/TravelForm";
 import { mockTravelPlan } from "@/lib/mock-data";
-import type { TravelPlan } from "@/types";
+import type { TravelInput, TravelPlan } from "@/types";
 
 export default function Home() {
   const [plan, setPlan] = useState<TravelPlan | null>(null);
@@ -22,7 +22,7 @@ export default function Home() {
     };
   }, []);
 
-  function handleSubmit() {
+  function handleSubmit(input: TravelInput) {
     if (loadingTimerRef.current) {
       clearTimeout(loadingTimerRef.current);
     }
@@ -33,7 +33,17 @@ export default function Home() {
     const delay = 1000 + Math.random() * 1000;
 
     loadingTimerRef.current = setTimeout(() => {
-      setPlan(mockTravelPlan);
+      setPlan({
+        ...mockTravelPlan,
+        title: `${input.destination} ${input.days} 天游玩计划`,
+        summary: `基于你填写的 ${input.destination} 行程需求生成的 Mock 预览。后续 API 阶段会替换为实时规划结果。`,
+        destination: input.destination,
+        totalDays: input.days,
+        totalBudget: input.budget ?? mockTravelPlan.totalBudget,
+        currency: input.currency,
+        inputParams: input,
+        updatedAt: new Date().toISOString(),
+      });
       setIsLoading(false);
       loadingTimerRef.current = null;
     }, delay);

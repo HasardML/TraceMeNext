@@ -2,7 +2,7 @@
 
 ## 当前阶段
 
-P11 Prompt 编写
+P12 API 路由和 AI 调用
 
 ## 阶段状态
 
@@ -10,49 +10,52 @@ P11 Prompt 编写
 
 ## 当前目标
 
-编写 AI 生成旅行计划所需的 Prompt，但暂不调用 AI。
+创建服务端 API，接入 AI 模型，返回结构化 TravelPlan。
 
 ## 前置确认
 
-- P10 表单到 Mock 结果联动已完成
+- P11 Prompt 编写已完成
 - `TravelPlanSchema` 和 `TravelInputSchema` 已存在
 - D005 明确先用 Mock 跑通体验和数据流，再接入 AI
-- D006 明确 Prompt 需要支持预算缺省和快速规划输入
+- D007 明确使用 Vercel AI SDK + OpenAI provider，默认模型为 `gpt-4.1-mini`
 
 ## 允许做的事
 
-- 创建 `lib/prompts.ts`
-- 实现 `buildSystemPrompt()`
-- 实现 `buildUserPrompt(input: TravelInput)`
-- 在 Prompt 中约束 AI 输出 JSON 与当前计划 Schema 对齐
-- 正确处理可选输入字段，避免输出 `undefined`
-- 更新阶段文档记录 P11 边界
+- 安装 `ai` 和 `@ai-sdk/openai`
+- 创建 `.env.example`
+- 确认 `.env.local` 被 `.gitignore` 忽略
+- 在 `types/travel.ts` 导出 `AiOutputSchema` 和 `AiOutput`
+- 创建 `lib/ai.ts`
+- 创建 `app/api/generate-plan/route.ts`
+- 更新 `DECISIONS.md` 记录模型选择
+- 更新阶段文档记录 P12 边界
 
 ## 禁止做的事
 
-- 调用 AI
-- 创建 API
-- 安装 AI SDK
-- 修改 Schema
-- 修改组件
-- 联调前端
+- 修改前端组件
+- 修改 `app/page.tsx`
+- 做流式输出
+- 做前端联调
 - 保存 localStorage
-- 做地图、天气、登录、数据库
+- 做地图、天气、登录、数据库或保存功能
 
 ## 完成标志
 
-- 新增 `lib/prompts.ts`
-- `buildSystemPrompt()` 明确角色、任务、合法 JSON 输出和字段约束
-- `buildSystemPrompt()` 排除元数据字段和当前 Schema 外字段
-- `buildSystemPrompt()` 约束中文内容、每日行程数量、预算合计、清单和提示数量
-- `buildUserPrompt(input)` 根据输入生成用户需求 Prompt
-- `buildUserPrompt(input)` 不输出 `undefined`
-- 不引入真实 AI、API、Schema 修改、组件修改或前端联调
+- 已安装 `ai` 和 `@ai-sdk/openai`
+- `.env.example` 提供清晰示例变量且不包含真实 Key
+- `.env.local` 被 `.gitignore` 忽略，`.env.example` 可提交
+- `AiOutputSchema` 从 `TravelPlanSchema` 派生并排除服务端元数据字段
+- `generateTravelPlan(input)` 使用 `generateObject`、Prompt 构建函数和 `AiOutputSchema`
+- AI 输出补齐 `id`、`createdAt`、`updatedAt`、`inputParams` 后通过 `TravelPlanSchema.parse`
+- `POST /api/generate-plan` 校验输入、调用 AI 并返回 TravelPlan JSON
+- 输入错误返回 400
+- API Key 缺失返回友好错误
+- 不做流式输出、前端联调、保存功能或组件修改
 - `npm run lint` 通过
 - `npm run build` 通过
 
 ## 本阶段交付
 
-- 新增 Prompt 构建函数
-- 明确 AI 输出 JSON 的字段、内容和数量约束
-- 保持 AI 接入前的纯 Prompt 准备状态
+- 服务端 AI 生成函数
+- 结构化 TravelPlan API route
+- 环境变量示例和模型选择决策记录

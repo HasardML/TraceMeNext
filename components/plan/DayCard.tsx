@@ -81,13 +81,13 @@ export function DayCard({ day, currency }: DayCardProps) {
 
       <CardContent>
         <ol className="space-y-4">
-          {day.items.map((item) => {
+          {day.items.map((item, index) => {
             const config = itemTypeConfig[item.type];
             const Icon = config.icon;
 
             return (
               <li
-                key={`${item.time}-${item.place}`}
+                key={`${day.day}-${item.time}-${item.place}-${index}`}
                 className="grid gap-3 rounded-md border border-border bg-background p-4 sm:grid-cols-[4.5rem_1fr]"
               >
                 <time className="text-sm font-semibold tabular-nums text-foreground">
@@ -132,4 +132,3 @@ export function DayCard({ day, currency }: DayCardProps) {
     </Card>
   );
 }
-

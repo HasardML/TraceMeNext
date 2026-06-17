@@ -232,11 +232,16 @@ export function TravelForm({ onSubmit, loading = false }: TravelFormProps = {}) 
             value={form.destination}
             onChange={(event) => updateField("destination", event.target.value)}
             aria-invalid={Boolean(errors.destination)}
+            aria-describedby={
+              errors.destination ? "destination-error" : undefined
+            }
             placeholder="例如：东京、巴黎、曼谷"
             required
           />
           {errors.destination ? (
-            <p className="text-sm text-red-600">{errors.destination}</p>
+            <p id="destination-error" className="text-sm text-red-600">
+              {errors.destination}
+            </p>
           ) : null}
         </div>
 
@@ -277,10 +282,13 @@ export function TravelForm({ onSubmit, loading = false }: TravelFormProps = {}) 
               value={form.days}
               onChange={(event) => updateField("days", event.target.value)}
               aria-invalid={Boolean(errors.days)}
+              aria-describedby={errors.days ? "days-error" : undefined}
               required
             />
             {errors.days ? (
-              <p className="text-sm text-red-600">{errors.days}</p>
+              <p id="days-error" className="text-sm text-red-600">
+                {errors.days}
+              </p>
             ) : null}
           </div>
 
@@ -296,9 +304,14 @@ export function TravelForm({ onSubmit, loading = false }: TravelFormProps = {}) 
               value={form.travelers}
               onChange={(event) => updateField("travelers", event.target.value)}
               aria-invalid={Boolean(errors.travelers)}
+              aria-describedby={
+                errors.travelers ? "travelers-error" : undefined
+              }
             />
             {errors.travelers ? (
-              <p className="text-sm text-red-600">{errors.travelers}</p>
+              <p id="travelers-error" className="text-sm text-red-600">
+                {errors.travelers}
+              </p>
             ) : null}
           </div>
         </div>
@@ -346,10 +359,13 @@ export function TravelForm({ onSubmit, loading = false }: TravelFormProps = {}) 
                       updateField("budget", event.target.value)
                     }
                     aria-invalid={Boolean(errors.budget)}
+                    aria-describedby={errors.budget ? "budget-error" : undefined}
                     placeholder="不填则按中等预算规划"
                   />
                   {errors.budget ? (
-                    <p className="text-sm text-red-600">{errors.budget}</p>
+                    <p id="budget-error" className="text-sm text-red-600">
+                      {errors.budget}
+                    </p>
                   ) : null}
                 </div>
 
@@ -363,6 +379,9 @@ export function TravelForm({ onSubmit, loading = false }: TravelFormProps = {}) 
                       id="currency"
                       className="w-full"
                       aria-invalid={Boolean(errors.currency)}
+                      aria-describedby={
+                        errors.currency ? "currency-error" : undefined
+                      }
                     >
                       <SelectValue placeholder="CNY" />
                     </SelectTrigger>
@@ -375,21 +394,27 @@ export function TravelForm({ onSubmit, loading = false }: TravelFormProps = {}) 
                     </SelectContent>
                   </Select>
                   {errors.currency ? (
-                    <p className="text-sm text-red-600">{errors.currency}</p>
+                    <p id="currency-error" className="text-sm text-red-600">
+                      {errors.currency}
+                    </p>
                   ) : null}
                 </div>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label>出行类型</Label>
+                  <Label htmlFor="travelType">出行类型</Label>
                   <Select
                     value={form.travelType || undefined}
                     onValueChange={(value) => updateField("travelType", value)}
                   >
                     <SelectTrigger
+                      id="travelType"
                       className="w-full"
                       aria-invalid={Boolean(errors.travelType)}
+                      aria-describedby={
+                        errors.travelType ? "travelType-error" : undefined
+                      }
                     >
                       <SelectValue placeholder="可选" />
                     </SelectTrigger>
@@ -402,19 +427,23 @@ export function TravelForm({ onSubmit, loading = false }: TravelFormProps = {}) 
                     </SelectContent>
                   </Select>
                   {errors.travelType ? (
-                    <p className="text-sm text-red-600">{errors.travelType}</p>
+                    <p id="travelType-error" className="text-sm text-red-600">
+                      {errors.travelType}
+                    </p>
                   ) : null}
                 </div>
 
                 <div className="space-y-2">
-                  <Label>节奏偏好</Label>
+                  <Label htmlFor="pace">节奏偏好</Label>
                   <Select
                     value={form.pace || undefined}
                     onValueChange={(value) => updateField("pace", value)}
                   >
                     <SelectTrigger
+                      id="pace"
                       className="w-full"
                       aria-invalid={Boolean(errors.pace)}
+                      aria-describedby={errors.pace ? "pace-error" : undefined}
                     >
                       <SelectValue placeholder="可选" />
                     </SelectTrigger>
@@ -427,7 +456,9 @@ export function TravelForm({ onSubmit, loading = false }: TravelFormProps = {}) 
                     </SelectContent>
                   </Select>
                   {errors.pace ? (
-                    <p className="text-sm text-red-600">{errors.pace}</p>
+                    <p id="pace-error" className="text-sm text-red-600">
+                      {errors.pace}
+                    </p>
                   ) : null}
                 </div>
               </div>

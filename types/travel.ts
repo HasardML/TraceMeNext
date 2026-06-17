@@ -28,8 +28,8 @@ export const TravelInputSchema = z.object({
   destination: z.string().min(1),
   departureCity: z.string().optional(),
   startDate: z.string().optional(),
-  days: z.number().min(1).max(30).default(5),
-  travelers: z.number().min(1).max(10).default(1),
+  days: z.number().int().min(1).max(30).default(5),
+  travelers: z.number().int().min(1).max(10).default(1),
   budget: z.number().min(0).optional(),
   currency: z.string().default("CNY"),
   travelType: z.enum(["solo", "couple", "family", "friends"]).optional(),
@@ -55,8 +55,16 @@ export const TravelPlanSchema = z.object({
   inputParams: TravelInputSchema.optional(),
 });
 
+export const AiOutputSchema = TravelPlanSchema.omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  inputParams: true,
+});
+
 export type TravelItem = z.infer<typeof TravelItemSchema>;
 export type TravelDay = z.infer<typeof TravelDaySchema>;
 export type Budget = z.infer<typeof BudgetSchema>;
 export type TravelInput = z.infer<typeof TravelInputSchema>;
+export type AiOutput = z.infer<typeof AiOutputSchema>;
 export type TravelPlan = z.infer<typeof TravelPlanSchema>;
