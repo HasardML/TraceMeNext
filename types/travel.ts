@@ -24,6 +24,30 @@ export const BudgetSchema = z.object({
   total: z.number(),
 });
 
+export const PackingItemSchema = z.object({
+  text: z.string(),
+  checked: z.boolean(),
+});
+
+const PackingListSchema = z
+  .array(
+    z.union([
+      z.string(),
+      PackingItemSchema,
+      z.object({
+        text: z.string(),
+        checked: z.boolean().optional(),
+      }),
+    ]),
+  )
+  .transform((items) =>
+    items.map((item) =>
+      typeof item === "string"
+        ? { text: item, checked: false }
+        : { text: item.text, checked: item.checked ?? false },
+    ),
+  );
+
 export const TravelInputSchema = z.object({
   destination: z.string().min(1),
   departureCity: z.string().optional(),
@@ -48,23 +72,30 @@ export const TravelPlanSchema = z.object({
   currency: z.string(),
   days: z.array(TravelDaySchema),
   budget: BudgetSchema,
-  packingList: z.array(z.string()),
+  packingList: PackingListSchema,
   tips: z.array(z.string()),
   createdAt: z.string(),
   updatedAt: z.string(),
   inputParams: TravelInputSchema.optional(),
 });
 
-export const AiOutputSchema = TravelPlanSchema.omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-  inputParams: true,
+export const AiOutputSchema = z.object({
+  title: z.string(),
+  summary: z.string(),
+  destination: z.string(),
+  totalDays: z.number(),
+  totalBudget: z.number(),
+  currency: z.string(),
+  days: z.array(TravelDaySchema),
+  budget: BudgetSchema,
+  packingList: z.array(PackingItemSchema),
+  tips: z.array(z.string()),
 });
 
 export type TravelItem = z.infer<typeof TravelItemSchema>;
 export type TravelDay = z.infer<typeof TravelDaySchema>;
 export type Budget = z.infer<typeof BudgetSchema>;
+export type PackingItem = z.infer<typeof PackingItemSchema>;
 export type TravelInput = z.infer<typeof TravelInputSchema>;
 export type AiOutput = z.infer<typeof AiOutputSchema>;
 export type TravelPlan = z.infer<typeof TravelPlanSchema>;

@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/card";
 import { fetchTravelPlan } from "@/lib/api";
 import { deletePlan, getPlan, updatePlan } from "@/lib/store";
-import type { TravelDay, TravelItem, TravelPlan } from "@/types";
+import type { Budget, TravelDay, TravelItem, TravelPlan } from "@/types";
 
 const REGENERATE_TIMEOUT_MS = 60_000;
 
@@ -126,17 +126,14 @@ export default function PlanDetailPage() {
     setPlan(savedPlan);
   }
 
-  function persistPlanDays(days: TravelPlan["days"]) {
+  function persistPlanUpdates(updates: Partial<TravelPlan>) {
     if (!plan) {
       return null;
     }
 
     setActionError(null);
 
-    const savedPlan = updatePlan(plan.id, {
-      days,
-      totalDays: days.length,
-    });
+    const savedPlan = updatePlan(plan.id, updates);
 
     if (!savedPlan) {
       setActionError("保存修改失败，请稍后再试。");
@@ -145,6 +142,17 @@ export default function PlanDetailPage() {
 
     setPlan(savedPlan);
     return savedPlan;
+  }
+
+  function persistPlanDays(days: TravelPlan["days"]) {
+    if (!plan) {
+      return null;
+    }
+
+    return persistPlanUpdates({
+      days,
+      totalDays: days.length,
+    });
   }
 
   function handleDayThemeSave(dayNumber: number, theme: string) {
@@ -289,6 +297,104 @@ export default function PlanDetailPage() {
     return Boolean(persistPlanDays(nextDays));
   }
 
+  function handleBudgetChange(budget: Budget) {
+    persistPlanUpdates({
+      budget,
+      totalBudget: budget.total,
+    });
+  }
+
+  function handlePackingItemToggle(index: number, checked: boolean) {
+    if (!plan?.packingList[index]) {
+      setActionError("没有找到要更新的清单项。");
+      return;
+    }
+
+    persistPlanUpdates({
+      packingList: plan.packingList.map((item, currentIndex) =>
+        currentIndex === index
+          ? {
+              ...item,
+              checked,
+            }
+          : item,
+      ),
+    });
+  }
+
+  function handlePackingItemAdd(text: string) {
+    if (!plan) {
+      return false;
+    }
+
+    return Boolean(
+      persistPlanUpdates({
+        packingList: [
+          ...plan.packingList,
+          {
+            text,
+            checked: false,
+          },
+        ],
+      }),
+    );
+  }
+
+  function handlePackingItemDelete(index: number) {
+    if (!plan?.packingList[index]) {
+      setActionError("没有找到要删除的清单项。");
+      return false;
+    }
+
+    return Boolean(
+      persistPlanUpdates({
+        packingList: plan.packingList.filter(
+          (_, currentIndex) => currentIndex !== index,
+        ),
+      }),
+    );
+  }
+
+  function handleTipAdd(tip: string) {
+    if (!plan) {
+      return false;
+    }
+
+    return Boolean(
+      persistPlanUpdates({
+        tips: [...plan.tips, tip],
+      }),
+    );
+  }
+
+  function handleTipSave(index: number, tip: string) {
+    if (!plan || plan.tips[index] === undefined) {
+      setActionError("没有找到要编辑的注意事项。");
+      return false;
+    }
+
+    return Boolean(
+      persistPlanUpdates({
+        tips: plan.tips.map((currentTip, currentIndex) =>
+          currentIndex === index ? tip : currentTip,
+        ),
+      }),
+    );
+  }
+
+  function handleTipDelete(index: number) {
+    if (!plan || plan.tips[index] === undefined) {
+      setActionError("没有找到要删除的注意事项。");
+      return false;
+    }
+
+    return Boolean(
+      persistPlanUpdates({
+        tips: plan.tips.filter((_, currentIndex) => currentIndex !== index),
+      }),
+    );
+  }
+
   const canRegenerate = Boolean(plan?.inputParams);
 
   return (
@@ -379,9 +485,23 @@ export default function PlanDetailPage() {
               onDayAdd={handleDayAdd}
               onDayDelete={handleDayDelete}
             />
-            <BudgetCard budget={plan.budget} currency={plan.currency} />
-            <PackingList packingList={plan.packingList} />
-            <TipsCard tips={plan.tips} />
+            <BudgetCard
+              budget={plan.budget}
+              currency={plan.currency}
+              onBudgetChange={handleBudgetChange}
+            />
+            <PackingList
+              packingList={plan.packingList}
+              onItemToggle={handlePackingItemToggle}
+              onItemAdd={handlePackingItemAdd}
+              onItemDelete={handlePackingItemDelete}
+            />
+            <TipsCard
+              tips={plan.tips}
+              onTipAdd={handleTipAdd}
+              onTipSave={handleTipSave}
+              onTipDelete={handleTipDelete}
+            />
             <Disclaimer />
           </div>
         ) : null}

@@ -1,6 +1,6 @@
 import type { TravelInput } from "@/types";
 
-// Prompt Schema Version: AiOutputSchema v1, aligned with TravelPlanSchema v1
+// Prompt Schema Version: AiOutputSchema v2, aligned with TravelPlanSchema v2
 // minus id, createdAt, updatedAt, and inputParams metadata fields.
 export function buildSystemPrompt(): string {
   return [
@@ -10,14 +10,15 @@ export function buildSystemPrompt(): string {
     "",
     "输出要求：",
     "- 只输出合法 JSON，不要输出 Markdown、代码块、解释、注释或多余文本。",
-    "- JSON 必须与 AiOutputSchema v1 对齐。",
+    "- JSON 必须与 AiOutputSchema v2 对齐。",
     "- 所有面向用户的内容必须使用中文。",
     "- 不要包含 id、createdAt、updatedAt、inputParams 字段。",
     "- 不要包含 coordinates、placeEn、weather、emergencyInfo 字段。",
     "- 每天 items 不超过 5 个主要行程项。",
     "- budget.total 必须等于 transport、accommodation、food、tickets、shopping、other 六项之和。",
     "- totalBudget 必须等于 budget.total。",
-    "- packingList 至少 8 项。",
+    "- packingList 至少 8 项，每项必须包含 text 和 checked。",
+    "- packingList 每项的 checked 默认输出 false。",
     "- tips 至少 5 项。",
     "",
     "必须输出以下 JSON 结构：",
@@ -53,7 +54,12 @@ export function buildSystemPrompt(): string {
           other: "number",
           total: "number",
         },
-        packingList: ["string"],
+        packingList: [
+          {
+            text: "string",
+            checked: "boolean",
+          },
+        ],
         tips: ["string"],
       },
       null,

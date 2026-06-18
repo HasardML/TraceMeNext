@@ -32,7 +32,15 @@ function readPlans(): TravelPlan[] {
       return [];
     }
 
-    return TravelPlansSchema.parse(JSON.parse(rawPlans));
+    const plans = TravelPlansSchema.parse(JSON.parse(rawPlans));
+
+    try {
+      storage.setItem(TRAVEL_PLANS_STORAGE_KEY, JSON.stringify(plans));
+    } catch {
+      // Reading should still succeed if migration persistence is unavailable.
+    }
+
+    return plans;
   } catch {
     return [];
   }
@@ -60,7 +68,7 @@ function getUpdatedAtTime(plan: TravelPlan): number {
 }
 
 export function savePlan(plan: TravelPlan): void {
-  const parsedPlan = TravelPlanSchema.parse(plan);
+  const parsedPlan = normalizeTravelPlan(plan);
   const plans = readPlans();
   const planIndex = plans.findIndex(
     (storedPlan) => storedPlan.id === parsedPlan.id,
@@ -77,6 +85,10 @@ export function savePlan(plan: TravelPlan): void {
   }
 
   writePlans(plans);
+}
+
+export function normalizeTravelPlan(plan: unknown): TravelPlan {
+  return TravelPlanSchema.parse(plan);
 }
 
 export function getPlan(id: string): TravelPlan | null {
