@@ -2,7 +2,7 @@
 
 ## 当前阶段
 
-P25 Markdown 导出
+P26 JSON 导出
 
 ## 阶段状态
 
@@ -10,7 +10,7 @@ P25 Markdown 导出
 
 ## 当前目标
 
-将旅行计划导出为 Markdown 文件。
+将旅行计划导出为 JSON 文件，用于备份和迁移。
 
 ## 前置确认
 
@@ -25,32 +25,28 @@ P25 Markdown 导出
 ## 允许做的事
 
 - 修改 `lib/export.ts`
-- 修改 `lib/download.ts`
 - 修改 `app/plans/[id]/page.tsx`
 - 修改 `CURRENT_PHASE.md`
 
 ## 禁止做的事
 
-- 不做 JSON 导出
+- 不做 JSON 导入
+- 不做批量导出
 - 不做 PDF
-- 不做分享链接
 - 不改 Schema
 
 ## 完成标志
 
-- 新增 `lib/export.ts`
-- 实现 `exportToMarkdown(plan: TravelPlan): string`
-- Markdown 包含标题、概述、目的地、天数、预算、每日行程表格、预算明细、行前清单、注意事项和 AI 内容免责声明
-- `packingList` 勾选状态导出为 `[x]`，未勾选状态导出为 `[ ]`
-- 新增 `lib/download.ts`
-- 实现 `downloadFile(content, filename, mimeType)`
-- 详情页增加「导出 Markdown」按钮
+- 修改 `lib/export.ts`
+- 实现 `exportToJSON(plan: TravelPlan): string`
+- 导出前使用 `TravelPlanSchema.parse(plan)` 校验旅行计划
+- 使用 `JSON.stringify(parsedPlan, null, 2)` 生成 2 空格缩进 JSON
+- 详情页增加「导出 JSON」按钮
 - 下载文件名包含目的地和天数
 - `npm run lint` 通过
 - `npm run build` 通过
 
 ## 本阶段交付
 
-- Markdown 导出纯函数
-- 浏览器文件下载工具
-- 计划详情页 Markdown 导出入口
+- JSON 导出纯函数
+- 计划详情页 JSON 导出入口

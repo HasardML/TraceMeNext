@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Download,
+  FileBraces,
   FileQuestion,
   RefreshCw,
   Trash2,
@@ -28,12 +29,13 @@ import {
 } from "@/components/ui/card";
 import { fetchTravelPlan } from "@/lib/api";
 import { downloadFile } from "@/lib/download";
-import { exportToMarkdown } from "@/lib/export";
+import { exportToJSON, exportToMarkdown } from "@/lib/export";
 import { deletePlan, getPlan, updatePlan } from "@/lib/store";
 import type { Budget, TravelDay, TravelItem, TravelPlan } from "@/types";
 
 const REGENERATE_TIMEOUT_MS = 60_000;
 const MARKDOWN_MIME_TYPE = "text/markdown;charset=utf-8";
+const JSON_MIME_TYPE = "application/json;charset=utf-8";
 
 function renumberDays(days: TravelDay[]) {
   return days.map((day, index) => ({
@@ -55,6 +57,12 @@ function createMarkdownFilename(plan: TravelPlan) {
   const destination = sanitizeFilenamePart(plan.destination) || "旅行计划";
 
   return `${destination}-${plan.totalDays}天旅行计划.md`;
+}
+
+function createJSONFilename(plan: TravelPlan) {
+  const destination = sanitizeFilenamePart(plan.destination) || "旅行计划";
+
+  return `${destination}-${plan.totalDays}天旅行计划.json`;
 }
 
 export default function PlanDetailPage() {
@@ -92,6 +100,14 @@ export default function PlanDetailPage() {
       createMarkdownFilename(plan),
       MARKDOWN_MIME_TYPE,
     );
+  }
+
+  function handleExportJSON() {
+    if (!plan) {
+      return;
+    }
+
+    downloadFile(exportToJSON(plan), createJSONFilename(plan), JSON_MIME_TYPE);
   }
 
   async function handleRegenerate() {
@@ -454,6 +470,15 @@ export default function PlanDetailPage() {
                 >
                   <Download aria-hidden="true" />
                   导出 Markdown
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleExportJSON}
+                >
+                  <FileBraces aria-hidden="true" />
+                  导出 JSON
                 </Button>
 
                 <Button

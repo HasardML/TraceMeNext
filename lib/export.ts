@@ -1,4 +1,4 @@
-import type { TravelItem, TravelPlan } from "@/types";
+import { TravelPlanSchema, type TravelItem, type TravelPlan } from "@/types";
 
 const itemTypeLabels: Record<TravelItem["type"], string> = {
   attraction: "景点",
@@ -35,6 +35,12 @@ function formatMoney(amount: number, currency: string) {
 
 function formatCost(cost: TravelItem["cost"], currency: string) {
   return typeof cost === "number" ? formatMoney(cost, currency) : "-";
+}
+
+export function exportToJSON(plan: TravelPlan): string {
+  const parsedPlan = TravelPlanSchema.parse(plan);
+
+  return JSON.stringify(parsedPlan, null, 2);
 }
 
 export function exportToMarkdown(plan: TravelPlan): string {
