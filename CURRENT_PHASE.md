@@ -2,7 +2,7 @@
 
 ## 当前阶段
 
-P26 JSON 导出
+P27 JSON 导入
 
 ## 阶段状态
 
@@ -10,7 +10,7 @@ P26 JSON 导出
 
 ## 当前目标
 
-将旅行计划导出为 JSON 文件，用于备份和迁移。
+允许用户上传 JSON 文件，导入旅行计划。
 
 ## 前置确认
 
@@ -24,29 +24,35 @@ P26 JSON 导出
 
 ## 允许做的事
 
-- 修改 `lib/export.ts`
-- 修改 `app/plans/[id]/page.tsx`
+- 创建 `components/ImportButton.tsx`
+- 修改 `app/plans/page.tsx`
+- 修改 `lib/store.ts`，用于复用迁移/校验并感知保存失败
 - 修改 `CURRENT_PHASE.md`
 
 ## 禁止做的事
 
-- 不做 JSON 导入
-- 不做批量导出
+- 不做 URL 导入
+- 不做批量导入
 - 不做 PDF
 - 不改 Schema
 
 ## 完成标志
 
-- 修改 `lib/export.ts`
-- 实现 `exportToJSON(plan: TravelPlan): string`
-- 导出前使用 `TravelPlanSchema.parse(plan)` 校验旅行计划
-- 使用 `JSON.stringify(parsedPlan, null, 2)` 生成 2 空格缩进 JSON
-- 详情页增加「导出 JSON」按钮
-- 下载文件名包含目的地和天数
+- 创建 `components/ImportButton.tsx`
+- 使用 `input type=file`
+- 只接受 `.json`
+- 读取文件文本并执行 `JSON.parse`
+- 使用 store 中的 `normalizeTravelPlan`/`TravelPlanSchema` 路径校验并迁移
+- 保存到 `localStorage`
+- 成功后跳转详情页
+- 失败时显示友好错误
+- `/plans` 页面顶部增加导入按钮
+- 覆盖非 JSON 文件、JSON 解析失败、Schema 校验失败、localStorage 保存失败
 - `npm run lint` 通过
 - `npm run build` 通过
 
 ## 本阶段交付
 
-- JSON 导出纯函数
-- 计划详情页 JSON 导出入口
+- JSON 导入按钮
+- 计划列表页 JSON 导入入口
+- 导入保存结果可感知的 store 复用入口

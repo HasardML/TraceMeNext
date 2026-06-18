@@ -67,16 +67,15 @@ function getUpdatedAtTime(plan: TravelPlan): number {
   return Number.isNaN(timestamp) ? 0 : timestamp;
 }
 
-export function savePlan(plan: TravelPlan): void {
-  const parsedPlan = normalizeTravelPlan(plan);
+function upsertPlan(plan: TravelPlan): boolean {
   const plans = readPlans();
   const planIndex = plans.findIndex(
-    (storedPlan) => storedPlan.id === parsedPlan.id,
+    (storedPlan) => storedPlan.id === plan.id,
   );
   const nextPlan =
     planIndex >= 0
-      ? { ...parsedPlan, updatedAt: new Date().toISOString() }
-      : parsedPlan;
+      ? { ...plan, updatedAt: new Date().toISOString() }
+      : plan;
 
   if (planIndex >= 0) {
     plans[planIndex] = nextPlan;
@@ -84,11 +83,21 @@ export function savePlan(plan: TravelPlan): void {
     plans.push(nextPlan);
   }
 
-  writePlans(plans);
+  return writePlans(plans);
+}
+
+export function savePlan(plan: TravelPlan): void {
+  upsertPlan(normalizeTravelPlan(plan));
 }
 
 export function normalizeTravelPlan(plan: unknown): TravelPlan {
   return TravelPlanSchema.parse(plan);
+}
+
+export function importPlan(plan: unknown): TravelPlan | null {
+  const parsedPlan = normalizeTravelPlan(plan);
+
+  return upsertPlan(parsedPlan) ? parsedPlan : null;
 }
 
 export function getPlan(id: string): TravelPlan | null {

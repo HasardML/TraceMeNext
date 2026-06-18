@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FolderOpen } from "lucide-react";
 
+import { ImportButton } from "@/components/ImportButton";
 import { PlanCard } from "@/components/PlanCard";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,10 +33,13 @@ export default function PlansPage() {
   return (
     <main className="min-h-[calc(100vh-3.5rem)] bg-background">
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <div className="mb-6">
-          <h1 className="text-2xl font-semibold tracking-normal text-foreground">
-            我的旅行计划
-          </h1>
+        <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-normal text-foreground">
+              我的旅行计划
+            </h1>
+          </div>
+          <ImportButton />
         </div>
 
         {hasPlans ? (
